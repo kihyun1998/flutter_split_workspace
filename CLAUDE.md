@@ -46,6 +46,8 @@ lib/
 
 ## Development Commands
 
+**Note**: Claude Code runs in WSL environment but the actual development is done on Windows. Please ask the user to run these commands in their Windows development environment:
+
 ```bash
 # Run tests
 flutter test
@@ -62,6 +64,8 @@ flutter analyze --no-fatal-infos
 # Publish dry run
 flutter packages pub publish --dry-run
 ```
+
+When implementing features, Claude should ask the user to run tests and validation commands rather than executing them directly.
 
 ## Incremental Implementation Plan
 
