@@ -19,11 +19,12 @@ class TabModel {
     String? tooltip,
     bool? canClose,
     Map<String, dynamic>? data,
+    bool clearTooltip = false,
   }) {
     return TabModel(
       id: id ?? this.id,
       title: title ?? this.title,
-      tooltip: tooltip ?? this.tooltip,
+      tooltip: clearTooltip ? null : (tooltip ?? this.tooltip),
       canClose: canClose ?? this.canClose,
       data: data ?? this.data,
     );

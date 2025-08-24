@@ -1,13 +1,10 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_split_workspace/models/tab_model.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('TabModel', () {
     test('should create a tab with required properties', () {
-      const tab = TabModel(
-        id: 'tab1',
-        title: 'Test Tab',
-      );
+      const tab = TabModel(id: 'tab1', title: 'Test Tab');
 
       expect(tab.id, 'tab1');
       expect(tab.title, 'Test Tab');
@@ -33,19 +30,27 @@ void main() {
     });
 
     test('should create a copy with modified properties', () {
-      const original = TabModel(
-        id: 'tab1',
-        title: 'Original Title',
-      );
+      const original = TabModel(id: 'tab1', title: 'Original Title');
 
-      final copied = original.copyWith(
-        title: 'New Title',
-        canClose: false,
-      );
+      final copied = original.copyWith(title: 'New Title', canClose: false);
 
       expect(copied.id, 'tab1');
       expect(copied.title, 'New Title');
       expect(copied.canClose, false);
+      expect(copied.tooltip, null);
+    });
+
+    test('should clear tooltip with clearTooltip flag', () {
+      const original = TabModel(
+        id: 'tab1', 
+        title: 'Test Tab',
+        tooltip: 'Original tooltip',
+      );
+
+      final copied = original.copyWith(clearTooltip: true);
+
+      expect(copied.id, 'tab1');
+      expect(copied.title, 'Test Tab');
       expect(copied.tooltip, null);
     });
 
@@ -69,15 +74,9 @@ void main() {
     });
 
     test('should not be equal for tabs with different properties', () {
-      const tab1 = TabModel(
-        id: 'tab1',
-        title: 'Test Tab',
-      );
+      const tab1 = TabModel(id: 'tab1', title: 'Test Tab');
 
-      const tab2 = TabModel(
-        id: 'tab2',
-        title: 'Test Tab',
-      );
+      const tab2 = TabModel(id: 'tab2', title: 'Test Tab');
 
       expect(tab1, isNot(equals(tab2)));
     });
