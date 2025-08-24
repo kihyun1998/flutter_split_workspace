@@ -142,3 +142,4 @@ Each phase should be fully tested before moving to the next. This approach allow
 - All widgets should accept callback functions for state changes
 - Maintain immutable data models where possible
 - Follow Flutter package conventions for exports and documentation
+- **IMPORTANT**: For detailed implementation specifications including all class signatures, APIs, and code examples, refer to `export.md` - this document contains the complete implementation guide
