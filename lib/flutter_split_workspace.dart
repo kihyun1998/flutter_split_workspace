@@ -1,4 +1,4 @@
-library flutter_split_workspace;
+library;
 
-export 'models/tab_model.dart';
 export 'models/split_panel_model.dart';
+export 'models/tab_model.dart';
