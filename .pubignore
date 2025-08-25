@@ -1,0 +1,5 @@
+.codeignore
+codemd*
+*.exe
+CODE.md
+plan.md
