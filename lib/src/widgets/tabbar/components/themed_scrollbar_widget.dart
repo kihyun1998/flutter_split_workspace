@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/split_workspace_theme.dart';
+import '../../../theme/split_workspace_theme.dart';
 
 /// A themed scrollbar widget that integrates with SplitWorkspace color scheme
 ///

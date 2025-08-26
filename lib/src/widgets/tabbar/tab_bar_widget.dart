@@ -1,14 +1,14 @@
 // lib/src/widgets/tab_bar_widget.dart (스크롤바 색상 수정)
 import 'package:flutter/material.dart';
 
-import '../models/drag_data.dart';
-import '../models/tab_data.dart';
-import '../theme/split_workspace_tab_theme.dart';
-import '../theme/split_workspace_theme.dart';
-import 'add_tab_button_widget.dart';
-import 'drag_indicator_widget.dart';
-import 'scrollable_tab_row_widget.dart';
-import 'themed_scrollbar_widget.dart';
+import '../../models/drag_data.dart';
+import '../../models/tab_data.dart';
+import '../../theme/split_workspace_tab_theme.dart';
+import '../../theme/split_workspace_theme.dart';
+import 'components/add_tab_button_widget.dart';
+import 'components/drag_indicator_widget.dart';
+import 'components/scrollable_tab_row_widget.dart';
+import 'components/themed_scrollbar_widget.dart';
 
 /// Tab bar widget that displays multiple tabs with drag and drop support
 ///

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../models/tab_data.dart';
-import '../theme/split_workspace_theme.dart';
-import 'tab_item_widget.dart';
+import '../../../models/tab_data.dart';
+import '../../../theme/split_workspace_theme.dart';
+import '../../tab_item/tab_item_widget.dart';
 
 /// A scrollable row widget that displays tab items horizontally
 ///

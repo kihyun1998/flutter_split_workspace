@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/split_workspace_theme.dart';
+import '../../../theme/split_workspace_theme.dart';
 
 /// An add tab button widget with theme-integrated styling
 ///
