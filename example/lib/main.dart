@@ -1,4 +1,4 @@
-// example/lib/main.dart (개선된 버전)
+// example/lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_split_workspace/flutter_split_workspace.dart';
 
@@ -371,14 +371,51 @@ class _ExampleScreenState extends State<ExampleScreen> {
     });
   }
 
+  /// Fixed tab reorder function with proper index validation
   void _onTabReorder(int oldIndex, int newIndex) {
+    // 🔧 Critical fix: Validate indices before processing
+    print(
+      '🔧 Tab reorder requested: $oldIndex → $newIndex (total: ${tabs.length})',
+    );
+
+    // Ensure oldIndex is valid
+    if (oldIndex < 0 || oldIndex >= tabs.length) {
+      print(
+        '❌ Invalid oldIndex: $oldIndex (valid range: 0-${tabs.length - 1})',
+      );
+      return;
+    }
+
+    // 🔧 Key fix: Adjust newIndex for same-list reordering
+    // When moving within the same list, after removing the item,
+    // the insertion index needs adjustment if it's after the removed item
+    int adjustedNewIndex = newIndex;
+
+    // If newIndex is after the oldIndex, we need to subtract 1
+    // because the item will be removed first, shifting indices down
+    if (newIndex > oldIndex) {
+      adjustedNewIndex = newIndex - 1;
+    }
+
+    // Clamp the adjusted index to valid range
+    adjustedNewIndex = adjustedNewIndex.clamp(0, tabs.length - 1);
+
+    print('🔧 Adjusted newIndex: $newIndex → $adjustedNewIndex');
+
+    // Only proceed if there's an actual position change
+    if (oldIndex == adjustedNewIndex) {
+      print('🔧 No position change needed, skipping reorder');
+      return;
+    }
+
     setState(() {
+      // Remove the dragged tab
       final TabData draggedTab = tabs.removeAt(oldIndex);
-      tabs.insert(newIndex, draggedTab);
+      // Insert at the adjusted position
+      tabs.insert(adjustedNewIndex, draggedTab);
     });
 
-    print('🔄 Tab reordered: $oldIndex → $newIndex');
-    print('🔄 Current order: ${tabs.map((t) => t.title).toList()}');
+    print('✅ Tab reordered successfully: ${tabs.map((t) => t.title).toList()}');
   }
 
   @override
