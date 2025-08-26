@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 // lib/src/theme/tab_theme.dart
 import 'package:flutter/material.dart';
 
@@ -36,6 +37,8 @@ class SplitWorkspaceTabTheme {
   /// Text style for tab titles
   final TextStyle? textStyle;
 
+  final TextStyle? inactiveTextStyle;
+
   /// Whether to show drag handle icons
   final bool showDragHandle;
 
@@ -57,6 +60,7 @@ class SplitWorkspaceTabTheme {
     this.inactiveTextColor,
     this.borderColor,
     this.textStyle,
+    this.inactiveTextStyle,
     this.showDragHandle = true,
     this.dragHandleSize = 12.0,
     this.closeButtonSize = 16.0,
@@ -75,6 +79,7 @@ class SplitWorkspaceTabTheme {
     Color? inactiveTextColor,
     Color? borderColor,
     TextStyle? textStyle,
+    TextStyle? inactiveTextStyle,
     bool? showDragHandle,
     double? dragHandleSize,
     double? closeButtonSize,
@@ -93,6 +98,7 @@ class SplitWorkspaceTabTheme {
       inactiveTextColor: inactiveTextColor ?? this.inactiveTextColor,
       borderColor: borderColor ?? this.borderColor,
       textStyle: textStyle ?? this.textStyle,
+      inactiveTextStyle: inactiveTextStyle ?? this.inactiveTextStyle,
       showDragHandle: showDragHandle ?? this.showDragHandle,
       dragHandleSize: dragHandleSize ?? this.dragHandleSize,
       closeButtonSize: closeButtonSize ?? this.closeButtonSize,
@@ -114,41 +120,4 @@ class SplitWorkspaceTabTheme {
   static const SplitWorkspaceTabTheme rounded = SplitWorkspaceTabTheme(
     borderRadius: 8.0,
   );
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is SplitWorkspaceTabTheme &&
-          runtimeType == other.runtimeType &&
-          height == other.height &&
-          width == other.width &&
-          minWidth == other.minWidth &&
-          maxWidth == other.maxWidth &&
-          borderRadius == other.borderRadius &&
-          activeBackgroundColor == other.activeBackgroundColor &&
-          inactiveBackgroundColor == other.inactiveBackgroundColor &&
-          activeTextColor == other.activeTextColor &&
-          inactiveTextColor == other.inactiveTextColor &&
-          borderColor == other.borderColor &&
-          textStyle == other.textStyle &&
-          showDragHandle == other.showDragHandle &&
-          dragHandleSize == other.dragHandleSize &&
-          closeButtonSize == other.closeButtonSize;
-
-  @override
-  int get hashCode =>
-      height.hashCode ^
-      width.hashCode ^
-      minWidth.hashCode ^
-      maxWidth.hashCode ^
-      borderRadius.hashCode ^
-      activeBackgroundColor.hashCode ^
-      inactiveBackgroundColor.hashCode ^
-      activeTextColor.hashCode ^
-      inactiveTextColor.hashCode ^
-      borderColor.hashCode ^
-      textStyle.hashCode ^
-      showDragHandle.hashCode ^
-      dragHandleSize.hashCode ^
-      closeButtonSize.hashCode;
 }

@@ -79,18 +79,12 @@ class TabWorkspace extends StatelessWidget {
                         Icon(
                           Icons.description_outlined,
                           size: 48,
-                          color: workspaceTheme.tab.inactiveTextColor
-                              .withOpacity(0.5),
+                          color: workspaceTheme.tab.inactiveTextColor,
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'No active tab',
-                          style: TextStyle(
-                            fontFamily: workspaceTheme.tab.fontFamily,
-                            fontSize: workspaceTheme.tab.fontSize,
-                            color: workspaceTheme.tab.inactiveTextColor
-                                .withOpacity(0.7),
-                          ),
+                          style: workspaceTheme.tab.textStyle,
                         ),
                       ],
                     ),

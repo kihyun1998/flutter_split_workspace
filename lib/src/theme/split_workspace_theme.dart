@@ -1,6 +1,8 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 // lib/src/theme/split_workspace_theme.dart
 import 'package:flutter/material.dart';
 
+import 'split_workspace_color_scheme_theme.dart';
 import 'split_workspace_scrollbar_theme.dart';
 import 'split_workspace_tab_theme.dart';
 
@@ -12,11 +14,13 @@ class SplitWorkspaceTheme {
   /// Theme configuration for scrollbars
   final SplitWorkspaceScrollbarTheme scrollbar;
 
+  final SplitWorkspaceColorSchemeTheme colorScheme;
+
   /// Background color for the workspace
   final Color? backgroundColor;
 
   /// Border color for the workspace
-  final Color? borderColor;
+  final Color borderColor;
 
   /// Border width for the workspace
   final double borderWidth;
@@ -27,8 +31,9 @@ class SplitWorkspaceTheme {
   const SplitWorkspaceTheme({
     this.tab = const SplitWorkspaceTabTheme(),
     this.scrollbar = const SplitWorkspaceScrollbarTheme(),
+    this.colorScheme = const SplitWorkspaceColorSchemeTheme(),
     this.backgroundColor,
-    this.borderColor,
+    this.borderColor = Colors.black,
     this.borderWidth = 1.0,
     this.borderRadius = 0.0,
   });
@@ -37,6 +42,7 @@ class SplitWorkspaceTheme {
   SplitWorkspaceTheme copyWith({
     SplitWorkspaceTabTheme? tab,
     SplitWorkspaceScrollbarTheme? scrollbar,
+    SplitWorkspaceColorSchemeTheme? colorScheme,
     Color? backgroundColor,
     Color? borderColor,
     double? borderWidth,
@@ -45,6 +51,7 @@ class SplitWorkspaceTheme {
     return SplitWorkspaceTheme(
       tab: tab ?? this.tab,
       scrollbar: scrollbar ?? this.scrollbar,
+      colorScheme: colorScheme ?? this.colorScheme,
       backgroundColor: backgroundColor ?? this.backgroundColor,
       borderColor: borderColor ?? this.borderColor,
       borderWidth: borderWidth ?? this.borderWidth,
@@ -103,25 +110,4 @@ class SplitWorkspaceTheme {
     tab: SplitWorkspaceTabTheme.compact,
     scrollbar: SplitWorkspaceScrollbarTheme(thickness: 6.0, radius: 3.0),
   );
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is SplitWorkspaceTheme &&
-          runtimeType == other.runtimeType &&
-          tab == other.tab &&
-          scrollbar == other.scrollbar &&
-          backgroundColor == other.backgroundColor &&
-          borderColor == other.borderColor &&
-          borderWidth == other.borderWidth &&
-          borderRadius == other.borderRadius;
-
-  @override
-  int get hashCode =>
-      tab.hashCode ^
-      scrollbar.hashCode ^
-      backgroundColor.hashCode ^
-      borderColor.hashCode ^
-      borderWidth.hashCode ^
-      borderRadius.hashCode;
 }

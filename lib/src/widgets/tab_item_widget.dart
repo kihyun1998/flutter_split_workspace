@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../models/drag_data.dart';
 import '../models/tab_data.dart';
-import '../theme/split_workspace_theme.dart';
+import '../theme/split_workspace_theme.dart'; // SplitWorkspaceTheme 임포트
 
 class TabItemWidget extends StatelessWidget {
   final TabData tab;
@@ -27,6 +27,7 @@ class TabItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 널 안전성을 위해 기본 테마를 사용
     final workspaceTheme = theme ?? SplitWorkspaceTheme.defaultTheme;
 
     return LongPressDraggable<DragData>(
@@ -52,15 +53,18 @@ class TabItemWidget extends StatelessWidget {
   }
 
   /// 일반 상태의 탭 위젯
-  Widget _buildNormalTab(BuildContext context, ThemeData theme) {
+  Widget _buildNormalTab(BuildContext context, SplitWorkspaceTheme theme) {
     return Container(
       height: 36,
       constraints: const BoxConstraints(minWidth: 120, maxWidth: 200),
       decoration: BoxDecoration(
+        // 테마 색상 사용
         color: isActive
             ? theme.colorScheme.surface
             : theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
-        border: Border(right: BorderSide(color: theme.dividerColor, width: 1)),
+        border: Border(
+          right: BorderSide(color: theme.colorScheme.dividerColor, width: 1),
+        ), // 테마 색상 사용
       ),
       child: Material(
         color: Colors.transparent,
@@ -74,6 +78,7 @@ class TabItemWidget extends StatelessWidget {
                 Icon(
                   Icons.drag_indicator,
                   size: 12,
+                  // 테마 색상 사용
                   color: isActive
                       ? theme.colorScheme.onSurface.withOpacity(0.7)
                       : theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
@@ -84,7 +89,8 @@ class TabItemWidget extends StatelessWidget {
                 Expanded(
                   child: Text(
                     tab.title,
-                    style: theme.textTheme.bodyMedium?.copyWith(
+                    // 테마 텍스트 스타일 사용
+                    style: theme.tab.textStyle?.copyWith(
                       color: isActive
                           ? theme.colorScheme.onSurface
                           : theme.colorScheme.onSurfaceVariant,
@@ -106,6 +112,7 @@ class TabItemWidget extends StatelessWidget {
                         child: Icon(
                           Icons.close,
                           size: 16,
+                          // 테마 색상 사용
                           color: isActive
                               ? theme.colorScheme.onSurface
                               : theme.colorScheme.onSurfaceVariant,
@@ -122,7 +129,7 @@ class TabItemWidget extends StatelessWidget {
   }
 
   /// 드래그 중 표시될 피드백 위젯
-  Widget _buildDragFeedback(BuildContext context, ThemeData theme) {
+  Widget _buildDragFeedback(BuildContext context, SplitWorkspaceTheme theme) {
     return Material(
       elevation: 8,
       borderRadius: BorderRadius.circular(4),
@@ -130,9 +137,11 @@ class TabItemWidget extends StatelessWidget {
         height: 36,
         width: 160, // 고정 너비
         decoration: BoxDecoration(
+          // 테마 색상 사용
           color: theme.colorScheme.primaryContainer.withOpacity(0.9),
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
+            // 테마 색상 사용
             color: theme.colorScheme.primary.withOpacity(0.7),
             width: 2,
           ),
@@ -144,16 +153,15 @@ class TabItemWidget extends StatelessWidget {
               Icon(
                 Icons.tab,
                 size: 16,
+                // 테마 색상 사용
                 color: theme.colorScheme.onPrimaryContainer,
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   tab.title,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onPrimaryContainer,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  // 테마 텍스트 스타일 사용
+                  style: theme.tab.textStyle,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -165,13 +173,19 @@ class TabItemWidget extends StatelessWidget {
   }
 
   /// 드래그 시작 시 원본 위치에 표시될 플레이스홀더
-  Widget _buildDragPlaceholder(BuildContext context, ThemeData theme) {
+  Widget _buildDragPlaceholder(
+    BuildContext context,
+    SplitWorkspaceTheme theme,
+  ) {
     return Container(
       height: 36,
       constraints: const BoxConstraints(minWidth: 120, maxWidth: 200),
       decoration: BoxDecoration(
+        // 테마 색상 사용
         color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
-        border: Border(right: BorderSide(color: theme.dividerColor, width: 1)),
+        border: Border(
+          right: BorderSide(color: theme.colorScheme.dividerColor, width: 1),
+        ), // 테마 색상 사용
         borderRadius: BorderRadius.circular(4),
       ),
       child: Center(
@@ -179,6 +193,7 @@ class TabItemWidget extends StatelessWidget {
           width: 80,
           height: 2,
           decoration: BoxDecoration(
+            // 테마 색상 사용
             color: theme.colorScheme.outline.withOpacity(0.5),
             borderRadius: BorderRadius.circular(1),
           ),

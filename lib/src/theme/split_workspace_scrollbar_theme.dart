@@ -62,46 +62,24 @@ class SplitWorkspaceScrollbarTheme {
   }
 
   /// Default scrollbar theme
-  static const SplitWorkspaceScrollbarTheme defaultTheme = SplitWorkspaceScrollbarTheme();
+  static const SplitWorkspaceScrollbarTheme defaultTheme =
+      SplitWorkspaceScrollbarTheme();
 
   /// Hidden scrollbar theme (invisible scrollbar)
-  static const SplitWorkspaceScrollbarTheme hidden = SplitWorkspaceScrollbarTheme(
-    visible: false,
-    alwaysVisible: false,
-    trackVisible: false,
-  );
+  static const SplitWorkspaceScrollbarTheme hidden =
+      SplitWorkspaceScrollbarTheme(
+        visible: false,
+        alwaysVisible: false,
+        trackVisible: false,
+      );
 
   /// Minimal scrollbar theme (thin and subtle)
-  static const SplitWorkspaceScrollbarTheme minimal = SplitWorkspaceScrollbarTheme(
-    visible: true,
-    alwaysVisible: false,
-    trackVisible: false,
-    thickness: 4.0,
-    radius: 2.0,
-  );
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is SplitWorkspaceScrollbarTheme &&
-          runtimeType == other.runtimeType &&
-          visible == other.visible &&
-          alwaysVisible == other.alwaysVisible &&
-          trackVisible == other.trackVisible &&
-          thickness == other.thickness &&
-          radius == other.radius &&
-          thumbColor == other.thumbColor &&
-          trackColor == other.trackColor &&
-          hoverColor == other.hoverColor;
-
-  @override
-  int get hashCode =>
-      visible.hashCode ^
-      alwaysVisible.hashCode ^
-      trackVisible.hashCode ^
-      thickness.hashCode ^
-      radius.hashCode ^
-      thumbColor.hashCode ^
-      trackColor.hashCode ^
-      hoverColor.hashCode;
+  static const SplitWorkspaceScrollbarTheme minimal =
+      SplitWorkspaceScrollbarTheme(
+        visible: true,
+        alwaysVisible: false,
+        trackVisible: false,
+        thickness: 4.0,
+        radius: 2.0,
+      );
 }

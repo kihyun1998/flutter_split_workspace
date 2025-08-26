@@ -24,9 +24,4 @@ class DragData {
       sourceWorkspaceId: sourceWorkspaceId ?? this.sourceWorkspaceId,
     );
   }
-
-  @override
-  String toString() {
-    return 'DragData(tab: ${tab.title}, originalIndex: $originalIndex, sourceWorkspaceId: $sourceWorkspaceId)';
-  }
 }

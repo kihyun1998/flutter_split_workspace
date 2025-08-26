@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../models/drag_data.dart';
 import '../models/tab_data.dart';
+import '../theme/split_workspace_tab_theme.dart';
 import '../theme/split_workspace_theme.dart';
 import 'tab_item_widget.dart';
 
@@ -120,7 +121,7 @@ class _TabBarWidgetState extends State<TabBarWidget> {
   }
 
   /// 스크롤 가능한 탭 Row 위젯
-  Widget _buildScrollableTabRow(TabTheme tabTheme) {
+  Widget _buildScrollableTabRow(SplitWorkspaceTabTheme tabTheme) {
     return SingleChildScrollView(
       controller: _scrollController,
       scrollDirection: Axis.horizontal,
@@ -171,7 +172,7 @@ class _TabBarWidgetState extends State<TabBarWidget> {
   }
 
   /// 드래그 인디케이터 (세로선)
-  Widget _buildDragIndicator(ThemeData theme) {
+  Widget _buildDragIndicator(SplitWorkspaceTheme theme) {
     if (_dragOverIndex == null) return const SizedBox.shrink();
 
     // 실제 탭 너비 기반으로 인디케이터 위치 계산
