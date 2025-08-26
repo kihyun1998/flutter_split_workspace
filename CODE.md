@@ -12,6 +12,7 @@ flutter_split_workspace/
         │   ├── drag_data.dart
         │   └── tab_data.dart
         ├── theme/
+        │   ├── split_workspace_color_scheme_theme.dart
         │   ├── split_workspace_scrollbar_theme.dart
         │   ├── split_workspace_tab_theme.dart
         │   └── split_workspace_theme.dart
@@ -315,9 +316,10 @@ library;
 
 export 'src/models/drag_data.dart';
 export 'src/models/tab_data.dart';
-export 'src/theme/split_workspace_scrollbar_theme.dart'; // 🆕 스크롤바 테마 추가
-export 'src/theme/split_workspace_tab_theme.dart'; // 🆕 탭 테마 추가
-export 'src/theme/split_workspace_theme.dart'; // 🆕 테마 추가
+export 'src/theme/split_workspace_color_scheme_theme.dart';
+export 'src/theme/split_workspace_scrollbar_theme.dart';
+export 'src/theme/split_workspace_tab_theme.dart';
+export 'src/theme/split_workspace_theme.dart';
 export 'src/widgets/tab_bar_widget.dart';
 export 'src/widgets/tab_item_widget.dart';
 export 'src/widgets/tab_workspace.dart';
@@ -351,11 +353,6 @@ class DragData {
       sourceWorkspaceId: sourceWorkspaceId ?? this.sourceWorkspaceId,
     );
   }
-
-  @override
-  String toString() {
-    return 'DragData(tab: ${tab.title}, originalIndex: $originalIndex, sourceWorkspaceId: $sourceWorkspaceId)';
-  }
 }
 
 ```
@@ -387,6 +384,65 @@ class TabData {
       title: title ?? this.title,
       content: content ?? this.content,
       closeable: closeable ?? this.closeable,
+    );
+  }
+}
+
+```
+## lib/src/theme/split_workspace_color_scheme_theme.dart
+```dart
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:flutter/material.dart';
+
+class SplitWorkspaceColorSchemeTheme {
+  final Color primary;
+  final Color primaryContainer;
+  final Color onPrimaryContainer;
+  final Color background;
+  final Color surface;
+  final Color onSurface;
+  final Color surfaceContainerHighest;
+  final Color onSurfaceVariant;
+  final Color outline;
+  final Color dividerColor;
+
+  const SplitWorkspaceColorSchemeTheme({
+    this.primary = Colors.blueGrey,
+    this.primaryContainer = Colors.blueGrey,
+    this.onPrimaryContainer = Colors.white,
+    this.background = Colors.white,
+    this.surface = Colors.white,
+    this.onSurface = Colors.black87,
+    this.surfaceContainerHighest = Colors.black12,
+    this.onSurfaceVariant = Colors.black54,
+    this.outline = Colors.grey,
+    this.dividerColor = Colors.black26,
+  });
+
+  SplitWorkspaceColorSchemeTheme copyWith({
+    Color? primary,
+    Color? primaryContainer,
+    Color? onPrimaryContainer,
+    Color? background,
+    Color? surface,
+    Color? onSurface,
+    Color? surfaceContainerHighest,
+    Color? onSurfaceVariant,
+    Color? outline,
+    Color? dividerColor,
+  }) {
+    return SplitWorkspaceColorSchemeTheme(
+      primary: primary ?? this.primary,
+      primaryContainer: primaryContainer ?? this.primaryContainer,
+      onPrimaryContainer: onPrimaryContainer ?? this.onPrimaryContainer,
+      background: background ?? this.background,
+      surface: surface ?? this.surface,
+      onSurface: onSurface ?? this.onSurface,
+      surfaceContainerHighest:
+          surfaceContainerHighest ?? this.surfaceContainerHighest,
+      onSurfaceVariant: onSurfaceVariant ?? this.onSurfaceVariant,
+      outline: outline ?? this.outline,
+      dividerColor: dividerColor ?? this.dividerColor,
     );
   }
 }
@@ -458,53 +514,32 @@ class SplitWorkspaceScrollbarTheme {
   }
 
   /// Default scrollbar theme
-  static const SplitWorkspaceScrollbarTheme defaultTheme = SplitWorkspaceScrollbarTheme();
+  static const SplitWorkspaceScrollbarTheme defaultTheme =
+      SplitWorkspaceScrollbarTheme();
 
   /// Hidden scrollbar theme (invisible scrollbar)
-  static const SplitWorkspaceScrollbarTheme hidden = SplitWorkspaceScrollbarTheme(
-    visible: false,
-    alwaysVisible: false,
-    trackVisible: false,
-  );
+  static const SplitWorkspaceScrollbarTheme hidden =
+      SplitWorkspaceScrollbarTheme(
+        visible: false,
+        alwaysVisible: false,
+        trackVisible: false,
+      );
 
   /// Minimal scrollbar theme (thin and subtle)
-  static const SplitWorkspaceScrollbarTheme minimal = SplitWorkspaceScrollbarTheme(
-    visible: true,
-    alwaysVisible: false,
-    trackVisible: false,
-    thickness: 4.0,
-    radius: 2.0,
-  );
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is SplitWorkspaceScrollbarTheme &&
-          runtimeType == other.runtimeType &&
-          visible == other.visible &&
-          alwaysVisible == other.alwaysVisible &&
-          trackVisible == other.trackVisible &&
-          thickness == other.thickness &&
-          radius == other.radius &&
-          thumbColor == other.thumbColor &&
-          trackColor == other.trackColor &&
-          hoverColor == other.hoverColor;
-
-  @override
-  int get hashCode =>
-      visible.hashCode ^
-      alwaysVisible.hashCode ^
-      trackVisible.hashCode ^
-      thickness.hashCode ^
-      radius.hashCode ^
-      thumbColor.hashCode ^
-      trackColor.hashCode ^
-      hoverColor.hashCode;
+  static const SplitWorkspaceScrollbarTheme minimal =
+      SplitWorkspaceScrollbarTheme(
+        visible: true,
+        alwaysVisible: false,
+        trackVisible: false,
+        thickness: 4.0,
+        radius: 2.0,
+      );
 }
 
 ```
 ## lib/src/theme/split_workspace_tab_theme.dart
 ```dart
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 // lib/src/theme/tab_theme.dart
 import 'package:flutter/material.dart';
 
@@ -543,6 +578,8 @@ class SplitWorkspaceTabTheme {
   /// Text style for tab titles
   final TextStyle? textStyle;
 
+  final TextStyle? inactiveTextStyle;
+
   /// Whether to show drag handle icons
   final bool showDragHandle;
 
@@ -564,6 +601,7 @@ class SplitWorkspaceTabTheme {
     this.inactiveTextColor,
     this.borderColor,
     this.textStyle,
+    this.inactiveTextStyle,
     this.showDragHandle = true,
     this.dragHandleSize = 12.0,
     this.closeButtonSize = 16.0,
@@ -582,6 +620,7 @@ class SplitWorkspaceTabTheme {
     Color? inactiveTextColor,
     Color? borderColor,
     TextStyle? textStyle,
+    TextStyle? inactiveTextStyle,
     bool? showDragHandle,
     double? dragHandleSize,
     double? closeButtonSize,
@@ -600,6 +639,7 @@ class SplitWorkspaceTabTheme {
       inactiveTextColor: inactiveTextColor ?? this.inactiveTextColor,
       borderColor: borderColor ?? this.borderColor,
       textStyle: textStyle ?? this.textStyle,
+      inactiveTextStyle: inactiveTextStyle ?? this.inactiveTextStyle,
       showDragHandle: showDragHandle ?? this.showDragHandle,
       dragHandleSize: dragHandleSize ?? this.dragHandleSize,
       closeButtonSize: closeButtonSize ?? this.closeButtonSize,
@@ -621,51 +661,16 @@ class SplitWorkspaceTabTheme {
   static const SplitWorkspaceTabTheme rounded = SplitWorkspaceTabTheme(
     borderRadius: 8.0,
   );
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is SplitWorkspaceTabTheme &&
-          runtimeType == other.runtimeType &&
-          height == other.height &&
-          width == other.width &&
-          minWidth == other.minWidth &&
-          maxWidth == other.maxWidth &&
-          borderRadius == other.borderRadius &&
-          activeBackgroundColor == other.activeBackgroundColor &&
-          inactiveBackgroundColor == other.inactiveBackgroundColor &&
-          activeTextColor == other.activeTextColor &&
-          inactiveTextColor == other.inactiveTextColor &&
-          borderColor == other.borderColor &&
-          textStyle == other.textStyle &&
-          showDragHandle == other.showDragHandle &&
-          dragHandleSize == other.dragHandleSize &&
-          closeButtonSize == other.closeButtonSize;
-
-  @override
-  int get hashCode =>
-      height.hashCode ^
-      width.hashCode ^
-      minWidth.hashCode ^
-      maxWidth.hashCode ^
-      borderRadius.hashCode ^
-      activeBackgroundColor.hashCode ^
-      inactiveBackgroundColor.hashCode ^
-      activeTextColor.hashCode ^
-      inactiveTextColor.hashCode ^
-      borderColor.hashCode ^
-      textStyle.hashCode ^
-      showDragHandle.hashCode ^
-      dragHandleSize.hashCode ^
-      closeButtonSize.hashCode;
 }
 
 ```
 ## lib/src/theme/split_workspace_theme.dart
 ```dart
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 // lib/src/theme/split_workspace_theme.dart
 import 'package:flutter/material.dart';
 
+import 'split_workspace_color_scheme_theme.dart';
 import 'split_workspace_scrollbar_theme.dart';
 import 'split_workspace_tab_theme.dart';
 
@@ -677,11 +682,13 @@ class SplitWorkspaceTheme {
   /// Theme configuration for scrollbars
   final SplitWorkspaceScrollbarTheme scrollbar;
 
+  final SplitWorkspaceColorSchemeTheme colorScheme;
+
   /// Background color for the workspace
   final Color? backgroundColor;
 
   /// Border color for the workspace
-  final Color? borderColor;
+  final Color borderColor;
 
   /// Border width for the workspace
   final double borderWidth;
@@ -692,8 +699,9 @@ class SplitWorkspaceTheme {
   const SplitWorkspaceTheme({
     this.tab = const SplitWorkspaceTabTheme(),
     this.scrollbar = const SplitWorkspaceScrollbarTheme(),
+    this.colorScheme = const SplitWorkspaceColorSchemeTheme(),
     this.backgroundColor,
-    this.borderColor,
+    this.borderColor = Colors.black,
     this.borderWidth = 1.0,
     this.borderRadius = 0.0,
   });
@@ -702,6 +710,7 @@ class SplitWorkspaceTheme {
   SplitWorkspaceTheme copyWith({
     SplitWorkspaceTabTheme? tab,
     SplitWorkspaceScrollbarTheme? scrollbar,
+    SplitWorkspaceColorSchemeTheme? colorScheme,
     Color? backgroundColor,
     Color? borderColor,
     double? borderWidth,
@@ -710,6 +719,7 @@ class SplitWorkspaceTheme {
     return SplitWorkspaceTheme(
       tab: tab ?? this.tab,
       scrollbar: scrollbar ?? this.scrollbar,
+      colorScheme: colorScheme ?? this.colorScheme,
       backgroundColor: backgroundColor ?? this.backgroundColor,
       borderColor: borderColor ?? this.borderColor,
       borderWidth: borderWidth ?? this.borderWidth,
@@ -768,27 +778,6 @@ class SplitWorkspaceTheme {
     tab: SplitWorkspaceTabTheme.compact,
     scrollbar: SplitWorkspaceScrollbarTheme(thickness: 6.0, radius: 3.0),
   );
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is SplitWorkspaceTheme &&
-          runtimeType == other.runtimeType &&
-          tab == other.tab &&
-          scrollbar == other.scrollbar &&
-          backgroundColor == other.backgroundColor &&
-          borderColor == other.borderColor &&
-          borderWidth == other.borderWidth &&
-          borderRadius == other.borderRadius;
-
-  @override
-  int get hashCode =>
-      tab.hashCode ^
-      scrollbar.hashCode ^
-      backgroundColor.hashCode ^
-      borderColor.hashCode ^
-      borderWidth.hashCode ^
-      borderRadius.hashCode;
 }
 
 ```
@@ -799,6 +788,7 @@ import 'package:flutter/material.dart';
 
 import '../models/drag_data.dart';
 import '../models/tab_data.dart';
+import '../theme/split_workspace_tab_theme.dart';
 import '../theme/split_workspace_theme.dart';
 import 'tab_item_widget.dart';
 
@@ -916,7 +906,7 @@ class _TabBarWidgetState extends State<TabBarWidget> {
   }
 
   /// 스크롤 가능한 탭 Row 위젯
-  Widget _buildScrollableTabRow(TabTheme tabTheme) {
+  Widget _buildScrollableTabRow(SplitWorkspaceTabTheme tabTheme) {
     return SingleChildScrollView(
       controller: _scrollController,
       scrollDirection: Axis.horizontal,
@@ -967,7 +957,7 @@ class _TabBarWidgetState extends State<TabBarWidget> {
   }
 
   /// 드래그 인디케이터 (세로선)
-  Widget _buildDragIndicator(ThemeData theme) {
+  Widget _buildDragIndicator(SplitWorkspaceTheme theme) {
     if (_dragOverIndex == null) return const SizedBox.shrink();
 
     // 실제 탭 너비 기반으로 인디케이터 위치 계산
@@ -1067,7 +1057,7 @@ import 'package:flutter/material.dart';
 
 import '../models/drag_data.dart';
 import '../models/tab_data.dart';
-import '../theme/split_workspace_theme.dart';
+import '../theme/split_workspace_theme.dart'; // SplitWorkspaceTheme 임포트
 
 class TabItemWidget extends StatelessWidget {
   final TabData tab;
@@ -1091,6 +1081,7 @@ class TabItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 널 안전성을 위해 기본 테마를 사용
     final workspaceTheme = theme ?? SplitWorkspaceTheme.defaultTheme;
 
     return LongPressDraggable<DragData>(
@@ -1116,15 +1107,18 @@ class TabItemWidget extends StatelessWidget {
   }
 
   /// 일반 상태의 탭 위젯
-  Widget _buildNormalTab(BuildContext context, ThemeData theme) {
+  Widget _buildNormalTab(BuildContext context, SplitWorkspaceTheme theme) {
     return Container(
       height: 36,
       constraints: const BoxConstraints(minWidth: 120, maxWidth: 200),
       decoration: BoxDecoration(
+        // 테마 색상 사용
         color: isActive
             ? theme.colorScheme.surface
             : theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
-        border: Border(right: BorderSide(color: theme.dividerColor, width: 1)),
+        border: Border(
+          right: BorderSide(color: theme.colorScheme.dividerColor, width: 1),
+        ), // 테마 색상 사용
       ),
       child: Material(
         color: Colors.transparent,
@@ -1138,6 +1132,7 @@ class TabItemWidget extends StatelessWidget {
                 Icon(
                   Icons.drag_indicator,
                   size: 12,
+                  // 테마 색상 사용
                   color: isActive
                       ? theme.colorScheme.onSurface.withOpacity(0.7)
                       : theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
@@ -1148,7 +1143,8 @@ class TabItemWidget extends StatelessWidget {
                 Expanded(
                   child: Text(
                     tab.title,
-                    style: theme.textTheme.bodyMedium?.copyWith(
+                    // 테마 텍스트 스타일 사용
+                    style: theme.tab.textStyle?.copyWith(
                       color: isActive
                           ? theme.colorScheme.onSurface
                           : theme.colorScheme.onSurfaceVariant,
@@ -1170,6 +1166,7 @@ class TabItemWidget extends StatelessWidget {
                         child: Icon(
                           Icons.close,
                           size: 16,
+                          // 테마 색상 사용
                           color: isActive
                               ? theme.colorScheme.onSurface
                               : theme.colorScheme.onSurfaceVariant,
@@ -1186,7 +1183,7 @@ class TabItemWidget extends StatelessWidget {
   }
 
   /// 드래그 중 표시될 피드백 위젯
-  Widget _buildDragFeedback(BuildContext context, ThemeData theme) {
+  Widget _buildDragFeedback(BuildContext context, SplitWorkspaceTheme theme) {
     return Material(
       elevation: 8,
       borderRadius: BorderRadius.circular(4),
@@ -1194,9 +1191,11 @@ class TabItemWidget extends StatelessWidget {
         height: 36,
         width: 160, // 고정 너비
         decoration: BoxDecoration(
+          // 테마 색상 사용
           color: theme.colorScheme.primaryContainer.withOpacity(0.9),
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
+            // 테마 색상 사용
             color: theme.colorScheme.primary.withOpacity(0.7),
             width: 2,
           ),
@@ -1208,16 +1207,15 @@ class TabItemWidget extends StatelessWidget {
               Icon(
                 Icons.tab,
                 size: 16,
+                // 테마 색상 사용
                 color: theme.colorScheme.onPrimaryContainer,
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   tab.title,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onPrimaryContainer,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  // 테마 텍스트 스타일 사용
+                  style: theme.tab.textStyle,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -1229,13 +1227,19 @@ class TabItemWidget extends StatelessWidget {
   }
 
   /// 드래그 시작 시 원본 위치에 표시될 플레이스홀더
-  Widget _buildDragPlaceholder(BuildContext context, ThemeData theme) {
+  Widget _buildDragPlaceholder(
+    BuildContext context,
+    SplitWorkspaceTheme theme,
+  ) {
     return Container(
       height: 36,
       constraints: const BoxConstraints(minWidth: 120, maxWidth: 200),
       decoration: BoxDecoration(
+        // 테마 색상 사용
         color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
-        border: Border(right: BorderSide(color: theme.dividerColor, width: 1)),
+        border: Border(
+          right: BorderSide(color: theme.colorScheme.dividerColor, width: 1),
+        ), // 테마 색상 사용
         borderRadius: BorderRadius.circular(4),
       ),
       child: Center(
@@ -1243,6 +1247,7 @@ class TabItemWidget extends StatelessWidget {
           width: 80,
           height: 2,
           decoration: BoxDecoration(
+            // 테마 색상 사용
             color: theme.colorScheme.outline.withOpacity(0.5),
             borderRadius: BorderRadius.circular(1),
           ),
@@ -1336,18 +1341,12 @@ class TabWorkspace extends StatelessWidget {
                         Icon(
                           Icons.description_outlined,
                           size: 48,
-                          color: workspaceTheme.tab.inactiveTextColor
-                              .withOpacity(0.5),
+                          color: workspaceTheme.tab.inactiveTextColor,
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'No active tab',
-                          style: TextStyle(
-                            fontFamily: workspaceTheme.tab.fontFamily,
-                            fontSize: workspaceTheme.tab.fontSize,
-                            color: workspaceTheme.tab.inactiveTextColor
-                                .withOpacity(0.7),
-                          ),
+                          style: workspaceTheme.tab.textStyle,
                         ),
                       ],
                     ),
