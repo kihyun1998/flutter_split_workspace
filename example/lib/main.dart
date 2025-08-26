@@ -1,3 +1,4 @@
+// example/lib/main.dart (수정)
 import 'package:flutter/material.dart';
 import 'package:flutter_split_workspace/flutter_split_workspace.dart';
 
@@ -42,21 +43,26 @@ class _ExampleScreenState extends State<ExampleScreen> {
         id: 'tab_1',
         title: 'Welcome',
         content: _buildWelcomeContent(),
-        closeable: false, // 첫 번째 탭은 닫을 수 없도록
+        closeable: false,
       ),
       TabData(
         id: 'tab_2',
-        title: 'Tab 2',
-        content: _buildTabContent('Tab 2', Colors.blue),
+        title: 'Draggable Tab 1',
+        content: _buildTabContent('Draggable Tab 1', Colors.blue),
       ),
       TabData(
         id: 'tab_3',
-        title: 'Tab 3',
-        content: _buildTabContent('Tab 3', Colors.green),
+        title: 'Draggable Tab 2',
+        content: _buildTabContent('Draggable Tab 2', Colors.green),
+      ),
+      TabData(
+        id: 'tab_4',
+        title: 'Draggable Tab 3',
+        content: _buildTabContent('Draggable Tab 3', Colors.orange),
       ),
     ];
     activeTabId = 'tab_1';
-    _tabCounter = 3;
+    _tabCounter = 4;
   }
 
   Widget _buildWelcomeContent() {
@@ -65,7 +71,7 @@ class _ExampleScreenState extends State<ExampleScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.tab, size: 64, color: Colors.purple),
+          const Icon(Icons.touch_app, size: 64, color: Colors.purple),
           const SizedBox(height: 16),
           const Text(
             'Flutter Split Workspace',
@@ -73,12 +79,12 @@ class _ExampleScreenState extends State<ExampleScreen> {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Basic Tab System Example',
+            'Drag & Drop Tab System',
             style: TextStyle(fontSize: 16, color: Colors.grey),
           ),
           const SizedBox(height: 32),
           const Text(
-            '• Click tabs to switch\n• Close tabs with X button\n• Add new tabs with + button',
+            '• 탭을 길게 눌러서 드래그하세요\n• 다른 위치에 드롭하여 순서를 변경하세요\n• + 버튼으로 새 탭을 추가하세요\n• X 버튼으로 탭을 닫으세요',
             style: TextStyle(fontSize: 14),
             textAlign: TextAlign.center,
           ),
@@ -127,6 +133,15 @@ class _ExampleScreenState extends State<ExampleScreen> {
               'Content for $title',
               style: const TextStyle(fontSize: 14, color: Colors.grey),
             ),
+            const SizedBox(height: 16),
+            const Text(
+              '👆 Try dragging the tabs above!',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
           ],
         ),
       ),
@@ -142,8 +157,6 @@ class _ExampleScreenState extends State<ExampleScreen> {
   void _onTabClose(String tabId) {
     setState(() {
       tabs.removeWhere((tab) => tab.id == tabId);
-
-      // 닫힌 탭이 활성 탭이었다면 다른 탭으로 변경
       if (activeTabId == tabId) {
         if (tabs.isNotEmpty) {
           activeTabId = tabs.last.id;
@@ -156,7 +169,7 @@ class _ExampleScreenState extends State<ExampleScreen> {
 
   void _onAddTab() {
     _tabCounter++;
-    final colors = [Colors.orange, Colors.red, Colors.teal, Colors.pink];
+    final colors = [Colors.red, Colors.teal, Colors.pink, Colors.indigo];
     final color = colors[(_tabCounter - 1) % colors.length];
 
     final newTab = TabData(
@@ -167,15 +180,30 @@ class _ExampleScreenState extends State<ExampleScreen> {
 
     setState(() {
       tabs.add(newTab);
-      activeTabId = newTab.id; // 새 탭을 활성화
+      activeTabId = newTab.id;
     });
+  }
+
+  // 🆕 탭 순서 변경 처리
+  void _onTabReorder(int oldIndex, int newIndex) {
+    setState(() {
+      // 실제 인덱스가 변경되는 경우 처리
+      if (oldIndex < newIndex) {
+        newIndex -= 1;
+      }
+
+      final TabData item = tabs.removeAt(oldIndex);
+      tabs.insert(newIndex, item);
+    });
+
+    print('🔄 Tab reordered: $oldIndex → $newIndex');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Flutter Split Workspace Example'),
+        title: const Text('Flutter Split Workspace - Drag & Drop Demo'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: TabWorkspace(
@@ -184,6 +212,8 @@ class _ExampleScreenState extends State<ExampleScreen> {
         onTabTap: _onTabTap,
         onTabClose: _onTabClose,
         onAddTab: _onAddTab,
+        onTabReorder: _onTabReorder, // 🆕 드래그 콜백 추가
+        workspaceId: 'main_workspace', // 🆕 워크스페이스 ID 추가
       ),
     );
   }
