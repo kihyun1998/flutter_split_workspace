@@ -35,9 +35,28 @@ class TabWorkspace extends StatelessWidget {
   /// Unique workspace identifier
   final String? workspaceId;
 
-  /// Theme configuration
+  /// Theme configuration for styling the entire workspace.
+  ///
+  /// When null, uses [SplitWorkspaceTheme.defaultTheme]. The theme
+  /// controls colors, dimensions, and behavior for all workspace components.
   final SplitWorkspaceTheme? theme;
 
+  /// Creates a tab workspace with the specified configuration.
+  ///
+  /// The [tabs] parameter is required and contains the list of tabs to display.
+  /// All other parameters are optional and provide callbacks for user interactions
+  /// and customization options.
+  ///
+  /// Example:
+  /// ```dart
+  /// TabWorkspace(
+  ///   tabs: myTabs,
+  ///   activeTabId: 'tab_1',
+  ///   onTabTap: (tabId) => setState(() => activeTab = tabId),
+  ///   onTabReorder: (oldIndex, newIndex) => reorderTabs(oldIndex, newIndex),
+  ///   theme: SplitWorkspaceTheme.dark,
+  /// )
+  /// ```
   const TabWorkspace({
     super.key,
     required this.tabs,
@@ -50,7 +69,10 @@ class TabWorkspace extends StatelessWidget {
     this.theme,
   });
 
-  /// Returns the currently active tab data, if any
+  /// Returns the currently active tab data, if any.
+  ///
+  /// Searches for a tab with an ID matching [activeTabId] and returns it.
+  /// Returns null if no active tab ID is set or if no matching tab is found.
   TabData? get activeTab {
     if (activeTabId == null) return null;
     try {

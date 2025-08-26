@@ -142,7 +142,10 @@ class _TabBarWidgetState extends State<TabBarWidget> {
     );
   }
 
-  /// Builds scrollbar with proper theme integration
+  /// Builds a scrollbar with proper theme integration and color scheme fallbacks.
+  ///
+  /// Creates a themed scrollbar that uses colors from the workspace's color scheme
+  /// when specific scrollbar colors aren't provided, ensuring visual consistency.
   Widget _buildThemedScrollbar(SplitWorkspaceTheme workspaceTheme) {
     final colorScheme = workspaceTheme.colorScheme;
     final scrollbarTheme = workspaceTheme.scrollbar;
@@ -177,7 +180,11 @@ class _TabBarWidgetState extends State<TabBarWidget> {
     );
   }
 
-  /// Builds the scrollable row of tab items
+  /// Builds the scrollable row of tab items.
+  ///
+  /// Creates a horizontally scrollable container with all tab items
+  /// arranged in a row, handling overflow when there are more tabs
+  /// than can fit in the available width.
   Widget _buildScrollableTabRow(SplitWorkspaceTheme workspaceTheme) {
     return SingleChildScrollView(
       controller: _scrollController,
@@ -203,7 +210,10 @@ class _TabBarWidgetState extends State<TabBarWidget> {
     );
   }
 
-  /// Builds the add new tab button using colorScheme
+  /// Builds the add new tab button with theme-integrated colors.
+  ///
+  /// Creates a button that allows users to add new tabs, positioned at the
+  /// end of the tab bar with styling that matches the current theme.
   Widget _buildAddTabButton(SplitWorkspaceTheme workspaceTheme) {
     final colorScheme = workspaceTheme.colorScheme;
     final tabTheme = workspaceTheme.tab;
@@ -235,7 +245,11 @@ class _TabBarWidgetState extends State<TabBarWidget> {
     );
   }
 
-  /// Builds the drag drop indicator using colorScheme
+  /// Builds the visual indicator shown during drag operations.
+  ///
+  /// Displays a colored line that indicates where a dragged tab would be
+  /// inserted if dropped at the current position. Uses the theme's primary
+  /// color for visibility and consistency.
   Widget _buildDragIndicator(SplitWorkspaceTheme theme) {
     if (_dragOverIndex == null) return const SizedBox.shrink();
 
@@ -264,7 +278,10 @@ class _TabBarWidgetState extends State<TabBarWidget> {
     );
   }
 
-  /// Updates the drag over index based on mouse position
+  /// Updates the drag over index based on the current mouse position.
+  ///
+  /// Calculates which tab position the mouse is currently over during
+  /// a drag operation, updating the visual indicator accordingly.
   void _updateDragOverIndex(Offset offset) {
     final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
@@ -296,7 +313,10 @@ class _TabBarWidgetState extends State<TabBarWidget> {
     }
   }
 
-  /// Calculates the width of individual tabs
+  /// Calculates the optimal width for individual tabs.
+  ///
+  /// Determines tab width based on available space, tab count, and
+  /// theme constraints (minimum and maximum width limits).
   double _calculateTabWidth() {
     final tabTheme = widget.theme?.tab ?? const SplitWorkspaceTabTheme();
     final availableWidth = MediaQuery.of(context).size.width - 36 - 50;
@@ -311,7 +331,10 @@ class _TabBarWidgetState extends State<TabBarWidget> {
     );
   }
 
-  /// Handles drop operations
+  /// Handles the completion of drag and drop operations.
+  ///
+  /// Processes the dropped tab data to determine if reordering should occur,
+  /// and triggers the appropriate callback with the old and new indices.
   void _handleDrop(DragData dragData) {
     // Handle reordering within the same workspace
     if (dragData.sourceWorkspaceId == widget.workspaceId &&

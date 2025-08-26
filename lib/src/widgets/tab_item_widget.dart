@@ -71,7 +71,11 @@ class TabItemWidget extends StatelessWidget {
     );
   }
 
-  /// Normal tab appearance using colorScheme
+  /// Builds the normal tab appearance with theme-integrated colors.
+  ///
+  /// Creates the standard tab button with appropriate colors based on
+  /// the active/inactive state, using the color scheme for consistency
+  /// when specific tab colors aren't provided.
   Widget _buildNormalTab(BuildContext context, SplitWorkspaceTheme theme) {
     final colorScheme = theme.colorScheme;
     final tabTheme = theme.tab;
@@ -154,7 +158,11 @@ class TabItemWidget extends StatelessWidget {
     );
   }
 
-  /// Drag feedback widget using colorScheme
+  /// Builds the visual feedback widget shown while dragging.
+  ///
+  /// Creates a floating representation of the tab being dragged,
+  /// with elevated appearance and primary colors to indicate
+  /// the drag state clearly to the user.
   Widget _buildDragFeedback(BuildContext context, SplitWorkspaceTheme theme) {
     final colorScheme = theme.colorScheme;
     final tabTheme = theme.tab;
@@ -194,7 +202,11 @@ class TabItemWidget extends StatelessWidget {
     );
   }
 
-  /// Drag placeholder widget using colorScheme
+  /// Builds the placeholder widget shown at the original tab position during drag.
+  ///
+  /// Creates a subtle, semi-transparent representation that indicates
+  /// where the tab originally was, maintaining layout stability during
+  /// the drag operation.
   Widget _buildDragPlaceholder(
     BuildContext context,
     SplitWorkspaceTheme theme,
