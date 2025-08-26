@@ -5,7 +5,11 @@ import '../models/drag_data.dart';
 import '../models/tab_data.dart';
 import '../theme/split_workspace_tab_theme.dart';
 import '../theme/split_workspace_theme.dart';
+import 'add_tab_button_widget.dart';
+import 'drag_indicator_widget.dart';
+import 'scrollable_tab_row_widget.dart';
 import 'tab_item_widget.dart';
+import 'themed_scrollbar_widget.dart';
 
 /// Tab bar widget that displays multiple tabs with drag and drop support
 ///
@@ -122,19 +126,46 @@ class _TabBarWidgetState extends State<TabBarWidget> {
                   // Scrollable tab area
                   Expanded(
                     child: scrollbarTheme.visible
-                        ? _buildThemedScrollbar(workspaceTheme)
-                        : _buildScrollableTabRow(workspaceTheme),
+                        ? ThemedScrollbarWidget(
+                            theme: workspaceTheme,
+                            scrollController: _scrollController,
+                            child: ScrollableTabRowWidget(
+                              tabs: widget.tabs,
+                              activeTabId: widget.activeTabId,
+                              onTabTap: widget.onTabTap,
+                              onTabClose: widget.onTabClose,
+                              workspaceId: widget.workspaceId,
+                              theme: widget.theme,
+                              scrollController: _scrollController,
+                            ),
+                          )
+                        : ScrollableTabRowWidget(
+                            tabs: widget.tabs,
+                            activeTabId: widget.activeTabId,
+                            onTabTap: widget.onTabTap,
+                            onTabClose: widget.onTabClose,
+                            workspaceId: widget.workspaceId,
+                            theme: widget.theme,
+                            scrollController: _scrollController,
+                          ),
                   ),
 
                   // Add tab button (always visible)
                   if (widget.onAddTab != null)
-                    _buildAddTabButton(workspaceTheme),
+                    AddTabButtonWidget(
+                      theme: workspaceTheme,
+                      onAddTab: widget.onAddTab,
+                    ),
                 ],
               ),
 
               // Drag indicator
               if (_isDragging && _dragOverIndex != null)
-                _buildDragIndicator(workspaceTheme),
+                DragIndicatorWidget(
+                  theme: workspaceTheme,
+                  dragOverIndex: _dragOverIndex,
+                  tabWidth: _calculateTabWidth(),
+                ),
             ],
           );
         },
@@ -142,141 +173,6 @@ class _TabBarWidgetState extends State<TabBarWidget> {
     );
   }
 
-  /// Builds a scrollbar with proper theme integration and color scheme fallbacks.
-  ///
-  /// Creates a themed scrollbar that uses colors from the workspace's color scheme
-  /// when specific scrollbar colors aren't provided, ensuring visual consistency.
-  Widget _buildThemedScrollbar(SplitWorkspaceTheme workspaceTheme) {
-    final colorScheme = workspaceTheme.colorScheme;
-    final scrollbarTheme = workspaceTheme.scrollbar;
-
-    // Create ScrollbarThemeData with proper color configuration
-    final scrollbarThemeData = ScrollbarThemeData(
-      thickness: WidgetStateProperty.all(scrollbarTheme.thickness),
-      thumbColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.hovered)) {
-          return scrollbarTheme.hoverColor ??
-              scrollbarTheme.thumbColor?.withOpacity(0.8) ??
-              colorScheme.outline.withOpacity(0.8);
-        }
-        return scrollbarTheme.thumbColor ?? colorScheme.outline;
-      }),
-      trackColor: WidgetStateProperty.all(
-        scrollbarTheme.trackColor ?? colorScheme.surfaceContainerHighest,
-      ),
-      radius: Radius.circular(scrollbarTheme.radius),
-      trackVisibility: WidgetStateProperty.all(scrollbarTheme.trackVisible),
-      thumbVisibility: WidgetStateProperty.all(scrollbarTheme.alwaysVisible),
-    );
-
-    return ScrollbarTheme(
-      data: scrollbarThemeData,
-      child: Scrollbar(
-        controller: _scrollController,
-        thumbVisibility: scrollbarTheme.alwaysVisible,
-        trackVisibility: scrollbarTheme.trackVisible,
-        child: _buildScrollableTabRow(workspaceTheme),
-      ),
-    );
-  }
-
-  /// Builds the scrollable row of tab items.
-  ///
-  /// Creates a horizontally scrollable container with all tab items
-  /// arranged in a row, handling overflow when there are more tabs
-  /// than can fit in the available width.
-  Widget _buildScrollableTabRow(SplitWorkspaceTheme workspaceTheme) {
-    return SingleChildScrollView(
-      controller: _scrollController,
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: widget.tabs.asMap().entries.map((entry) {
-          final index = entry.key;
-          final tab = entry.value;
-
-          return TabItemWidget(
-            tab: tab,
-            isActive: tab.id == widget.activeTabId,
-            onTap: () => widget.onTabTap?.call(tab.id),
-            onClose: tab.closeable
-                ? () => widget.onTabClose?.call(tab.id)
-                : null,
-            tabIndex: index,
-            workspaceId: widget.workspaceId,
-            theme: widget.theme,
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  /// Builds the add new tab button with theme-integrated colors.
-  ///
-  /// Creates a button that allows users to add new tabs, positioned at the
-  /// end of the tab bar with styling that matches the current theme.
-  Widget _buildAddTabButton(SplitWorkspaceTheme workspaceTheme) {
-    final colorScheme = workspaceTheme.colorScheme;
-    final tabTheme = workspaceTheme.tab;
-
-    return Container(
-      width: 36,
-      height: tabTheme.height,
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
-        border: Border(
-          left: BorderSide(color: colorScheme.dividerColor, width: 1),
-        ),
-        borderRadius: BorderRadius.only(
-          topRight: Radius.circular(workspaceTheme.borderRadius),
-          bottomRight: Radius.circular(workspaceTheme.borderRadius),
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: widget.onAddTab,
-          borderRadius: BorderRadius.only(
-            topRight: Radius.circular(workspaceTheme.borderRadius),
-            bottomRight: Radius.circular(workspaceTheme.borderRadius),
-          ),
-          child: Icon(Icons.add, size: 16, color: colorScheme.onSurfaceVariant),
-        ),
-      ),
-    );
-  }
-
-  /// Builds the visual indicator shown during drag operations.
-  ///
-  /// Displays a colored line that indicates where a dragged tab would be
-  /// inserted if dropped at the current position. Uses the theme's primary
-  /// color for visibility and consistency.
-  Widget _buildDragIndicator(SplitWorkspaceTheme theme) {
-    if (_dragOverIndex == null) return const SizedBox.shrink();
-
-    final colorScheme = theme.colorScheme;
-    final tabWidth = _calculateTabWidth();
-    final indicatorX = _dragOverIndex! * tabWidth;
-
-    return Positioned(
-      left: indicatorX,
-      top: 0,
-      child: Container(
-        width: 3,
-        height: theme.tab.height,
-        decoration: BoxDecoration(
-          color: colorScheme.primary,
-          borderRadius: BorderRadius.circular(1.5),
-          boxShadow: [
-            BoxShadow(
-              color: colorScheme.primary.withOpacity(0.3),
-              blurRadius: 4,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   /// Updates the drag over index based on the current mouse position.
   ///

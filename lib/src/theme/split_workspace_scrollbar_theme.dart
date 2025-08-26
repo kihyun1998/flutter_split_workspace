@@ -76,7 +76,7 @@ class SplitWorkspaceScrollbarTheme {
     this.visible = true,
     this.alwaysVisible = false,
     this.trackVisible = false,
-    this.thickness = 8.0,
+    this.thickness = 3.0,
     this.radius = 4.0,
     this.thumbColor,
     this.trackColor,
