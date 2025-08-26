@@ -32,6 +32,13 @@ class TabBarWidget extends StatefulWidget {
 class _TabBarWidgetState extends State<TabBarWidget> {
   int? _dragOverIndex; // 드래그 오버 중인 인덱스
   bool _isDragging = false; // 드래그 중인지 여부
+  final ScrollController _scrollController = ScrollController(); // 스크롤 컨트롤러 추가
+
+  @override
+  void dispose() {
+    _scrollController.dispose(); // 메모리 누수 방지
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,31 +76,43 @@ class _TabBarWidgetState extends State<TabBarWidget> {
         builder: (context, candidateData, rejectedData) {
           return Stack(
             children: [
-              // 기본 탭바 레이아웃
+              // 🆕 스크롤 가능한 탭바 레이아웃
               Row(
                 children: [
-                  // 탭들
-                  ...widget.tabs.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final tab = entry.value;
+                  // 스크롤 가능한 탭 영역
+                  Expanded(
+                    child: Scrollbar(
+                      controller: _scrollController,
+                      thumbVisibility: true, // 스크롤바 항상 표시
+                      trackVisibility: true, // 스크롤 트랙 표시
+                      thickness: 8, // 얇은 스크롤바
+                      radius: const Radius.circular(4),
+                      child: SingleChildScrollView(
+                        controller: _scrollController,
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: widget.tabs.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final tab = entry.value;
 
-                    return TabItemWidget(
-                      tab: tab,
-                      isActive: tab.id == widget.activeTabId,
-                      onTap: () => widget.onTabTap?.call(tab.id),
-                      onClose: tab.closeable
-                          ? () => widget.onTabClose?.call(tab.id)
-                          : null,
-                      tabIndex: index,
-                      workspaceId: widget.workspaceId,
-                    );
-                  }),
+                            return TabItemWidget(
+                              tab: tab,
+                              isActive: tab.id == widget.activeTabId,
+                              onTap: () => widget.onTabTap?.call(tab.id),
+                              onClose: tab.closeable
+                                  ? () => widget.onTabClose?.call(tab.id)
+                                  : null,
+                              tabIndex: index,
+                              workspaceId: widget.workspaceId,
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ),
+                  ),
 
-                  // 새 탭 추가 버튼
+                  // 새 탭 추가 버튼 (항상 보임)
                   if (widget.onAddTab != null) _buildAddTabButton(theme),
-
-                  // 남은 공간
-                  Expanded(child: Container(color: theme.colorScheme.surface)),
                 ],
               ),
 
