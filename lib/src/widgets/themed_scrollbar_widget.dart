@@ -16,17 +16,22 @@ class ThemedScrollbarWidget extends StatelessWidget {
   /// Child widget to be wrapped with scrollbar
   final Widget child;
 
+  /// Whether to force show the scrollbar (overrides theme settings)
+  final bool? showScrollbar;
+
   const ThemedScrollbarWidget({
     super.key,
     required this.theme,
     required this.scrollController,
     required this.child,
+    this.showScrollbar,
   });
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = theme.colorScheme;
     final scrollbarTheme = theme.scrollbar;
+    final shouldShowScrollbar = showScrollbar ?? scrollbarTheme.alwaysVisible;
 
     // Create ScrollbarThemeData with proper color configuration
     final scrollbarThemeData = ScrollbarThemeData(
@@ -44,14 +49,14 @@ class ThemedScrollbarWidget extends StatelessWidget {
       ),
       radius: Radius.circular(scrollbarTheme.radius),
       trackVisibility: WidgetStateProperty.all(scrollbarTheme.trackVisible),
-      thumbVisibility: WidgetStateProperty.all(scrollbarTheme.alwaysVisible),
+      thumbVisibility: WidgetStateProperty.all(shouldShowScrollbar),
     );
 
     return ScrollbarTheme(
       data: scrollbarThemeData,
       child: Scrollbar(
         controller: scrollController,
-        thumbVisibility: scrollbarTheme.alwaysVisible,
+        thumbVisibility: shouldShowScrollbar,
         trackVisibility: scrollbarTheme.trackVisible,
         child: child,
       ),

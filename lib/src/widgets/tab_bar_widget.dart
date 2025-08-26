@@ -8,7 +8,6 @@ import '../theme/split_workspace_theme.dart';
 import 'add_tab_button_widget.dart';
 import 'drag_indicator_widget.dart';
 import 'scrollable_tab_row_widget.dart';
-import 'tab_item_widget.dart';
 import 'themed_scrollbar_widget.dart';
 
 /// Tab bar widget that displays multiple tabs with drag and drop support
@@ -67,6 +66,9 @@ class _TabBarWidgetState extends State<TabBarWidget> {
   /// Whether a drag operation is currently in progress
   bool _isDragging = false;
 
+  /// Whether the tab bar is currently being hovered
+  bool _isHovered = false;
+
   /// Controller for horizontal scrolling of tabs
   final ScrollController _scrollController = ScrollController();
 
@@ -79,57 +81,70 @@ class _TabBarWidgetState extends State<TabBarWidget> {
   @override
   Widget build(BuildContext context) {
     final workspaceTheme = widget.theme ?? SplitWorkspaceTheme.defaultTheme;
-    final colorScheme = workspaceTheme.colorScheme;
     final tabTheme = workspaceTheme.tab;
     final scrollbarTheme = workspaceTheme.scrollbar;
 
-    return Container(
-      height: tabTheme.height,
-      decoration: BoxDecoration(
-        color: workspaceTheme.effectiveBackgroundColor,
-        border: Border(
-          bottom: BorderSide(
-            color: workspaceTheme.effectiveBorderColor,
-            width: workspaceTheme.borderWidth,
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: Container(
+        height: tabTheme.height,
+        decoration: BoxDecoration(
+          color: workspaceTheme.effectiveBackgroundColor,
+          border: Border(
+            bottom: BorderSide(
+              color: workspaceTheme.effectiveBorderColor,
+              width: workspaceTheme.borderWidth,
+            ),
           ),
         ),
-      ),
-      child: DragTarget<DragData>(
-        onWillAcceptWithDetails: (details) {
-          setState(() {
-            _isDragging = true;
-          });
-          return true;
-        },
-        onLeave: (data) {
-          setState(() {
-            _isDragging = false;
-            _dragOverIndex = null;
-          });
-        },
-        onMove: (details) {
-          _updateDragOverIndex(details.offset);
-        },
-        onAcceptWithDetails: (details) {
-          _handleDrop(details.data);
-          setState(() {
-            _isDragging = false;
-            _dragOverIndex = null;
-          });
-        },
-        builder: (context, candidateData, rejectedData) {
-          return Stack(
-            children: [
-              // Main tab bar layout
-              Row(
-                children: [
-                  // Scrollable tab area
-                  Expanded(
-                    child: scrollbarTheme.visible
-                        ? ThemedScrollbarWidget(
-                            theme: workspaceTheme,
-                            scrollController: _scrollController,
-                            child: ScrollableTabRowWidget(
+        child: DragTarget<DragData>(
+          onWillAcceptWithDetails: (details) {
+            setState(() {
+              _isDragging = true;
+            });
+            return true;
+          },
+          onLeave: (data) {
+            setState(() {
+              _isDragging = false;
+              _dragOverIndex = null;
+            });
+          },
+          onMove: (details) {
+            _updateDragOverIndex(details.offset);
+          },
+          onAcceptWithDetails: (details) {
+            _handleDrop(details.data);
+            setState(() {
+              _isDragging = false;
+              _dragOverIndex = null;
+            });
+          },
+          builder: (context, candidateData, rejectedData) {
+            return Stack(
+              children: [
+                // Main tab bar layout
+                Row(
+                  children: [
+                    // Scrollable tab area
+                    Expanded(
+                      child: scrollbarTheme.visible
+                          ? ThemedScrollbarWidget(
+                              theme: workspaceTheme,
+                              scrollController: _scrollController,
+                              showScrollbar: _isHovered,
+                              child: ScrollableTabRowWidget(
+                                tabs: widget.tabs,
+                                activeTabId: widget.activeTabId,
+                                onTabTap: widget.onTabTap,
+                                onTabClose: widget.onTabClose,
+                                workspaceId: widget.workspaceId,
+                                theme: widget.theme,
+                                scrollController: _scrollController,
+                              ),
+                            )
+                          : ScrollableTabRowWidget(
                               tabs: widget.tabs,
                               activeTabId: widget.activeTabId,
                               onTabTap: widget.onTabTap,
@@ -138,41 +153,31 @@ class _TabBarWidgetState extends State<TabBarWidget> {
                               theme: widget.theme,
                               scrollController: _scrollController,
                             ),
-                          )
-                        : ScrollableTabRowWidget(
-                            tabs: widget.tabs,
-                            activeTabId: widget.activeTabId,
-                            onTabTap: widget.onTabTap,
-                            onTabClose: widget.onTabClose,
-                            workspaceId: widget.workspaceId,
-                            theme: widget.theme,
-                            scrollController: _scrollController,
-                          ),
-                  ),
-
-                  // Add tab button (always visible)
-                  if (widget.onAddTab != null)
-                    AddTabButtonWidget(
-                      theme: workspaceTheme,
-                      onAddTab: widget.onAddTab,
                     ),
-                ],
-              ),
 
-              // Drag indicator
-              if (_isDragging && _dragOverIndex != null)
-                DragIndicatorWidget(
-                  theme: workspaceTheme,
-                  dragOverIndex: _dragOverIndex,
-                  tabWidth: _calculateTabWidth(),
+                    // Add tab button (always visible)
+                    if (widget.onAddTab != null)
+                      AddTabButtonWidget(
+                        theme: workspaceTheme,
+                        onAddTab: widget.onAddTab,
+                      ),
+                  ],
                 ),
-            ],
-          );
-        },
+
+                // Drag indicator
+                if (_isDragging && _dragOverIndex != null)
+                  DragIndicatorWidget(
+                    theme: workspaceTheme,
+                    dragOverIndex: _dragOverIndex,
+                    tabWidth: _calculateTabWidth(),
+                  ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
-
 
   /// Updates the drag over index based on the current mouse position.
   ///
