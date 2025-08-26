@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/tab_data.dart';
+import '../theme/split_workspace_theme.dart';
 import 'tab_bar_widget.dart';
 
 class TabWorkspace extends StatelessWidget {
@@ -10,8 +11,9 @@ class TabWorkspace extends StatelessWidget {
   final Function(String tabId)? onTabTap;
   final Function(String tabId)? onTabClose;
   final VoidCallback? onAddTab;
-  final Function(int oldIndex, int newIndex)? onTabReorder; // 순서 변경 콜백 추가
-  final String? workspaceId; // 워크스페이스 ID 추가
+  final Function(int oldIndex, int newIndex)? onTabReorder;
+  final String? workspaceId;
+  final SplitWorkspaceTheme? theme; // 🆕 테마 추가
 
   const TabWorkspace({
     super.key,
@@ -20,8 +22,9 @@ class TabWorkspace extends StatelessWidget {
     this.onTabTap,
     this.onTabClose,
     this.onAddTab,
-    this.onTabReorder, // 추가
-    this.workspaceId, // 추가
+    this.onTabReorder,
+    this.workspaceId,
+    this.theme, // 🆕 테마 파라미터 추가
   });
 
   TabData? get activeTab {
@@ -35,13 +38,19 @@ class TabWorkspace extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final effectiveWorkspaceId = workspaceId ?? 'default'; // 기본값 제공
+    final workspaceTheme = theme ?? SplitWorkspaceTheme.defaultTheme;
+    final effectiveWorkspaceId = workspaceId ?? 'default';
 
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        border: Border.all(color: theme.dividerColor, width: 1),
+        color: workspaceTheme.backgroundColor,
+        borderRadius: BorderRadius.circular(workspaceTheme.borderRadius),
+        border: workspaceTheme.borderWidth > 0
+            ? Border.all(
+                color: workspaceTheme.borderColor,
+                width: workspaceTheme.borderWidth,
+              )
+            : null,
       ),
       child: Column(
         children: [
@@ -52,8 +61,9 @@ class TabWorkspace extends StatelessWidget {
             onTabTap: onTabTap,
             onTabClose: onTabClose,
             onAddTab: onAddTab,
-            onTabReorder: onTabReorder, // 전달
-            workspaceId: effectiveWorkspaceId, // 전달
+            onTabReorder: onTabReorder,
+            workspaceId: effectiveWorkspaceId,
+            theme: workspaceTheme,
           ),
 
           // 콘텐츠 영역
@@ -61,7 +71,7 @@ class TabWorkspace extends StatelessWidget {
             child:
                 activeTab?.content ??
                 Container(
-                  color: theme.colorScheme.surface,
+                  color: workspaceTheme.backgroundColor,
                   child: Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -69,15 +79,16 @@ class TabWorkspace extends StatelessWidget {
                         Icon(
                           Icons.description_outlined,
                           size: 48,
-                          color: theme.colorScheme.onSurfaceVariant.withOpacity(
-                            0.5,
-                          ),
+                          color: workspaceTheme.tab.inactiveTextColor
+                              .withOpacity(0.5),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'No active tab',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant
+                          style: TextStyle(
+                            fontFamily: workspaceTheme.tab.fontFamily,
+                            fontSize: workspaceTheme.tab.fontSize,
+                            color: workspaceTheme.tab.inactiveTextColor
                                 .withOpacity(0.7),
                           ),
                         ),

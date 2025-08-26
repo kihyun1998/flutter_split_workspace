@@ -30,6 +30,32 @@ class _ExampleScreenState extends State<ExampleScreen> {
   List<TabData> tabs = [];
   String? activeTabId;
   int _tabCounter = 0;
+  SplitWorkspaceTheme _currentTheme =
+      SplitWorkspaceTheme.defaultTheme; // 🆕 현재 테마
+
+  // 🆕 커스텀 테마 정의
+  final SplitWorkspaceTheme _customTheme = const SplitWorkspaceTheme(
+    tab: SplitWorkspaceTabTheme(
+      height: 40.0,
+      width: 180.0,
+      borderRadius: 12.0,
+      showDragHandle: false,
+      activeBackgroundColor: Colors.deepPurple,
+      inactiveBackgroundColor: Colors.grey,
+      activeTextColor: Colors.white,
+      inactiveTextColor: Colors.black54,
+    ),
+    scrollbar: SplitWorkspaceScrollbarTheme(
+      thickness: 12.0,
+      radius: 6.0,
+      alwaysVisible: true,
+      trackVisible: true,
+    ),
+    backgroundColor: Colors.purple,
+    borderColor: Colors.deepPurple,
+    borderWidth: 2.0,
+    borderRadius: 8.0,
+  );
 
   @override
   void initState() {
@@ -84,7 +110,7 @@ class _ExampleScreenState extends State<ExampleScreen> {
           ),
           const SizedBox(height: 32),
           const Text(
-            '• 탭을 길게 눌러서 드래그하세요\n• 다른 위치에 드롭하여 순서를 변경하세요\n• + 버튼으로 새 탭을 추가하세요\n• X 버튼으로 탭을 닫으세요',
+            '• 탭을 길게 눌러서 드래그하세요\n• 다른 위치에 드롭하여 순서를 변경하세요\n• + 버튼으로 새 탭을 추가하세요\n• X 버튼으로 탭을 닫으세요\n• 🎨 테마 버튼으로 스타일을 변경하세요',
             style: TextStyle(fontSize: 14),
             textAlign: TextAlign.center,
           ),
@@ -187,24 +213,60 @@ class _ExampleScreenState extends State<ExampleScreen> {
   // 🆕 탭 순서 변경 처리
   void _onTabReorder(int oldIndex, int newIndex) {
     setState(() {
-      // 실제 인덱스가 변경되는 경우 처리
-      if (oldIndex < newIndex) {
-        newIndex -= 1;
-      }
+      // 드래그한 탭을 제거
+      final TabData draggedTab = tabs.removeAt(oldIndex);
 
-      final TabData item = tabs.removeAt(oldIndex);
-      tabs.insert(newIndex, item);
+      // 새 위치에 삽입 (더 간단한 로직)
+      tabs.insert(newIndex, draggedTab);
     });
 
     print('🔄 Tab reordered: $oldIndex → $newIndex');
+    print('🔄 Current tab order: ${tabs.map((t) => t.title).toList()}');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Flutter Split Workspace - Drag & Drop Demo'),
+        title: const Text('Flutter Split Workspace - Theme Demo'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          // 🆕 테마 변경 버튼들
+          PopupMenuButton<SplitWorkspaceTheme>(
+            icon: const Icon(Icons.palette),
+            onSelected: (theme) {
+              setState(() {
+                _currentTheme = theme;
+              });
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: SplitWorkspaceTheme.defaultTheme,
+                child: Text('Default Theme'),
+              ),
+              const PopupMenuItem(
+                value: SplitWorkspaceTheme.dark,
+                child: Text('Dark Theme'),
+              ),
+              const PopupMenuItem(
+                value: SplitWorkspaceTheme.light,
+                child: Text('Light Theme'),
+              ),
+              const PopupMenuItem(
+                value: SplitWorkspaceTheme.minimal,
+                child: Text('Minimal Theme'),
+              ),
+              const PopupMenuItem(
+                value: SplitWorkspaceTheme.compact,
+                child: Text('Compact Theme'),
+              ),
+              PopupMenuItem(
+                value: _customTheme,
+                child: const Text('Custom Theme'),
+              ),
+            ],
+          ),
+        ],
       ),
       body: TabWorkspace(
         tabs: tabs,
@@ -212,8 +274,9 @@ class _ExampleScreenState extends State<ExampleScreen> {
         onTabTap: _onTabTap,
         onTabClose: _onTabClose,
         onAddTab: _onAddTab,
-        onTabReorder: _onTabReorder, // 🆕 드래그 콜백 추가
-        workspaceId: 'main_workspace', // 🆕 워크스페이스 ID 추가
+        onTabReorder: _onTabReorder,
+        workspaceId: 'main_workspace',
+        theme: _currentTheme, // 🆕 테마 적용
       ),
     );
   }

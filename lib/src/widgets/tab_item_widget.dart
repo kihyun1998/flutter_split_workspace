@@ -3,14 +3,16 @@ import 'package:flutter/material.dart';
 
 import '../models/drag_data.dart';
 import '../models/tab_data.dart';
+import '../theme/split_workspace_theme.dart';
 
 class TabItemWidget extends StatelessWidget {
   final TabData tab;
   final bool isActive;
   final VoidCallback? onTap;
   final VoidCallback? onClose;
-  final int tabIndex; // 드래그용 인덱스 추가
-  final String workspaceId; // 워크스페이스 ID 추가
+  final int tabIndex;
+  final String workspaceId;
+  final SplitWorkspaceTheme? theme; // 🆕 테마 추가
 
   const TabItemWidget({
     super.key,
@@ -18,13 +20,14 @@ class TabItemWidget extends StatelessWidget {
     required this.isActive,
     this.onTap,
     this.onClose,
-    required this.tabIndex, // 필수로 변경
-    required this.workspaceId, // 필수로 변경
+    required this.tabIndex,
+    required this.workspaceId,
+    this.theme, // 🆕 테마 파라미터 추가
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final workspaceTheme = theme ?? SplitWorkspaceTheme.defaultTheme;
 
     return LongPressDraggable<DragData>(
       // 드래그 데이터
@@ -38,13 +41,13 @@ class TabItemWidget extends StatelessWidget {
       delay: const Duration(milliseconds: 200),
 
       // 드래그 중 표시될 위젯 (피드백)
-      feedback: _buildDragFeedback(context, theme),
+      feedback: _buildDragFeedback(context, workspaceTheme),
 
       // 드래그 시작할 때 원본 위치에 표시될 위젯
-      childWhenDragging: _buildDragPlaceholder(context, theme),
+      childWhenDragging: _buildDragPlaceholder(context, workspaceTheme),
 
       // 기본 상태의 탭
-      child: _buildNormalTab(context, theme),
+      child: _buildNormalTab(context, workspaceTheme),
     );
   }
 

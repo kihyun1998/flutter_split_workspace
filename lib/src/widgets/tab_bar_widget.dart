@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../models/drag_data.dart';
 import '../models/tab_data.dart';
+import '../theme/split_workspace_theme.dart';
 import 'tab_item_widget.dart';
 
 class TabBarWidget extends StatefulWidget {
@@ -11,8 +12,9 @@ class TabBarWidget extends StatefulWidget {
   final Function(String tabId)? onTabTap;
   final Function(String tabId)? onTabClose;
   final VoidCallback? onAddTab;
-  final Function(int oldIndex, int newIndex)? onTabReorder; // 순서 변경 콜백 추가
-  final String workspaceId; // 워크스페이스 ID 추가
+  final Function(int oldIndex, int newIndex)? onTabReorder;
+  final String workspaceId;
+  final SplitWorkspaceTheme? theme; // 🆕 테마 추가
 
   const TabBarWidget({
     super.key,
@@ -21,8 +23,9 @@ class TabBarWidget extends StatefulWidget {
     this.onTabTap,
     this.onTabClose,
     this.onAddTab,
-    this.onTabReorder, // 추가
-    required this.workspaceId, // 추가
+    this.onTabReorder,
+    required this.workspaceId,
+    this.theme, // 🆕 테마 파라미터 추가
   });
 
   @override
@@ -42,13 +45,20 @@ class _TabBarWidgetState extends State<TabBarWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final workspaceTheme = widget.theme ?? SplitWorkspaceTheme.defaultTheme;
+    final tabTheme = workspaceTheme.tab;
+    final scrollbarTheme = workspaceTheme.scrollbar;
 
     return Container(
-      height: 36,
+      height: tabTheme.height,
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        border: Border(bottom: BorderSide(color: theme.dividerColor, width: 1)),
+        color: workspaceTheme.backgroundColor,
+        border: Border(
+          bottom: BorderSide(
+            color: workspaceTheme.borderColor,
+            width: workspaceTheme.borderWidth,
+          ),
+        ),
       ),
       child: DragTarget<DragData>(
         onWillAcceptWithDetails: (details) {
@@ -81,44 +91,27 @@ class _TabBarWidgetState extends State<TabBarWidget> {
                 children: [
                   // 스크롤 가능한 탭 영역
                   Expanded(
-                    child: Scrollbar(
-                      controller: _scrollController,
-                      thumbVisibility: true, // 스크롤바 항상 표시
-                      trackVisibility: true, // 스크롤 트랙 표시
-                      thickness: 8, // 얇은 스크롤바
-                      radius: const Radius.circular(4),
-                      child: SingleChildScrollView(
-                        controller: _scrollController,
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: widget.tabs.asMap().entries.map((entry) {
-                            final index = entry.key;
-                            final tab = entry.value;
-
-                            return TabItemWidget(
-                              tab: tab,
-                              isActive: tab.id == widget.activeTabId,
-                              onTap: () => widget.onTabTap?.call(tab.id),
-                              onClose: tab.closeable
-                                  ? () => widget.onTabClose?.call(tab.id)
-                                  : null,
-                              tabIndex: index,
-                              workspaceId: widget.workspaceId,
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ),
+                    child: scrollbarTheme.visible
+                        ? Scrollbar(
+                            controller: _scrollController,
+                            thumbVisibility: scrollbarTheme.alwaysVisible,
+                            trackVisibility: scrollbarTheme.trackVisible,
+                            thickness: scrollbarTheme.thickness,
+                            radius: Radius.circular(scrollbarTheme.radius),
+                            child: _buildScrollableTabRow(tabTheme),
+                          )
+                        : _buildScrollableTabRow(tabTheme),
                   ),
 
                   // 새 탭 추가 버튼 (항상 보임)
-                  if (widget.onAddTab != null) _buildAddTabButton(theme),
+                  if (widget.onAddTab != null)
+                    _buildAddTabButton(workspaceTheme),
                 ],
               ),
 
               // 드래그 인디케이터
               if (_isDragging && _dragOverIndex != null)
-                _buildDragIndicator(theme),
+                _buildDragIndicator(workspaceTheme),
             ],
           );
         },
@@ -126,23 +119,52 @@ class _TabBarWidgetState extends State<TabBarWidget> {
     );
   }
 
+  /// 스크롤 가능한 탭 Row 위젯
+  Widget _buildScrollableTabRow(TabTheme tabTheme) {
+    return SingleChildScrollView(
+      controller: _scrollController,
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: widget.tabs.asMap().entries.map((entry) {
+          final index = entry.key;
+          final tab = entry.value;
+
+          return TabItemWidget(
+            tab: tab,
+            isActive: tab.id == widget.activeTabId,
+            onTap: () => widget.onTabTap?.call(tab.id),
+            onClose: tab.closeable
+                ? () => widget.onTabClose?.call(tab.id)
+                : null,
+            tabIndex: index,
+            workspaceId: widget.workspaceId,
+            theme: widget.theme, // 🆕 테마 전달
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   /// 새 탭 추가 버튼
-  Widget _buildAddTabButton(ThemeData theme) {
+  Widget _buildAddTabButton(SplitWorkspaceTheme workspaceTheme) {
+    final tabTheme = workspaceTheme.tab;
+
     return Container(
       width: 36,
-      height: 36,
+      height: tabTheme.height,
       decoration: BoxDecoration(
-        border: Border(right: BorderSide(color: theme.dividerColor, width: 1)),
+        border: Border(
+          right: BorderSide(
+            color: workspaceTheme.borderColor,
+            width: workspaceTheme.borderWidth,
+          ),
+        ),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: widget.onAddTab,
-          child: Icon(
-            Icons.add,
-            size: 16,
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
+          child: Icon(Icons.add, size: 16, color: tabTheme.inactiveTextColor),
         ),
       ),
     );
