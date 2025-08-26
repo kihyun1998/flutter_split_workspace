@@ -131,7 +131,7 @@ class _ExampleScreenState extends State<ExampleScreen> {
   }
 
   Widget _buildWelcomeContent() {
-    return Container(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
