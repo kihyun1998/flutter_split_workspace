@@ -29,8 +29,8 @@ class SplitWorkspaceScrollbarTheme {
 
   const SplitWorkspaceScrollbarTheme({
     this.visible = true,
-    this.alwaysVisible = true,
-    this.trackVisible = true,
+    this.alwaysVisible = false, // 🔧 Changed from true to false
+    this.trackVisible = false, // 🔧 Changed from true to false for cleaner look
     this.thickness = 8.0,
     this.radius = 4.0,
     this.thumbColor,
@@ -61,7 +61,7 @@ class SplitWorkspaceScrollbarTheme {
     );
   }
 
-  /// Default scrollbar theme
+  /// Default scrollbar theme - now with better defaults
   static const SplitWorkspaceScrollbarTheme defaultTheme =
       SplitWorkspaceScrollbarTheme();
 

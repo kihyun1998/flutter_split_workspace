@@ -1,4 +1,4 @@
-// lib/src/widgets/tab_bar_widget.dart (수정)
+// lib/src/widgets/tab_bar_widget.dart (스크롤바 색상 수정)
 import 'package:flutter/material.dart';
 
 import '../models/drag_data.dart';
@@ -7,15 +7,38 @@ import '../theme/split_workspace_tab_theme.dart';
 import '../theme/split_workspace_theme.dart';
 import 'tab_item_widget.dart';
 
+/// Tab bar widget that displays multiple tabs with drag and drop support
+///
+/// This widget handles:
+/// - Horizontal scrolling of tabs
+/// - Drag and drop reordering
+/// - Drop zone indicators
+/// - Add new tab functionality
+/// - Theme integration with colorScheme
 class TabBarWidget extends StatefulWidget {
+  /// List of tabs to display
   final List<TabData> tabs;
+
+  /// Currently active tab ID
   final String? activeTabId;
+
+  /// Callback when a tab is tapped
   final Function(String tabId)? onTabTap;
+
+  /// Callback when a tab's close button is tapped
   final Function(String tabId)? onTabClose;
+
+  /// Callback when the add tab button is tapped
   final VoidCallback? onAddTab;
+
+  /// Callback when tabs are reordered via drag and drop
   final Function(int oldIndex, int newIndex)? onTabReorder;
+
+  /// Workspace identifier for drag and drop operations
   final String workspaceId;
-  final SplitWorkspaceTheme? theme; // 🆕 테마 추가
+
+  /// Theme configuration for styling
+  final SplitWorkspaceTheme? theme;
 
   const TabBarWidget({
     super.key,
@@ -26,7 +49,7 @@ class TabBarWidget extends StatefulWidget {
     this.onAddTab,
     this.onTabReorder,
     required this.workspaceId,
-    this.theme, // 🆕 테마 파라미터 추가
+    this.theme,
   });
 
   @override
@@ -34,29 +57,35 @@ class TabBarWidget extends StatefulWidget {
 }
 
 class _TabBarWidgetState extends State<TabBarWidget> {
-  int? _dragOverIndex; // 드래그 오버 중인 인덱스
-  bool _isDragging = false; // 드래그 중인지 여부
-  final ScrollController _scrollController = ScrollController(); // 스크롤 컨트롤러 추가
+  /// Index where a dragged tab would be inserted
+  int? _dragOverIndex;
+
+  /// Whether a drag operation is currently in progress
+  bool _isDragging = false;
+
+  /// Controller for horizontal scrolling of tabs
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void dispose() {
-    _scrollController.dispose(); // 메모리 누수 방지
+    _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final workspaceTheme = widget.theme ?? SplitWorkspaceTheme.defaultTheme;
+    final colorScheme = workspaceTheme.colorScheme;
     final tabTheme = workspaceTheme.tab;
     final scrollbarTheme = workspaceTheme.scrollbar;
 
     return Container(
       height: tabTheme.height,
       decoration: BoxDecoration(
-        color: workspaceTheme.backgroundColor,
+        color: workspaceTheme.effectiveBackgroundColor,
         border: Border(
           bottom: BorderSide(
-            color: workspaceTheme.borderColor,
+            color: workspaceTheme.effectiveBorderColor,
             width: workspaceTheme.borderWidth,
           ),
         ),
@@ -87,30 +116,23 @@ class _TabBarWidgetState extends State<TabBarWidget> {
         builder: (context, candidateData, rejectedData) {
           return Stack(
             children: [
-              // 🆕 스크롤 가능한 탭바 레이아웃
+              // Main tab bar layout
               Row(
                 children: [
-                  // 스크롤 가능한 탭 영역
+                  // Scrollable tab area
                   Expanded(
                     child: scrollbarTheme.visible
-                        ? Scrollbar(
-                            controller: _scrollController,
-                            thumbVisibility: scrollbarTheme.alwaysVisible,
-                            trackVisibility: scrollbarTheme.trackVisible,
-                            thickness: scrollbarTheme.thickness,
-                            radius: Radius.circular(scrollbarTheme.radius),
-                            child: _buildScrollableTabRow(tabTheme),
-                          )
-                        : _buildScrollableTabRow(tabTheme),
+                        ? _buildThemedScrollbar(workspaceTheme)
+                        : _buildScrollableTabRow(workspaceTheme),
                   ),
 
-                  // 새 탭 추가 버튼 (항상 보임)
+                  // Add tab button (always visible)
                   if (widget.onAddTab != null)
                     _buildAddTabButton(workspaceTheme),
                 ],
               ),
 
-              // 드래그 인디케이터
+              // Drag indicator
               if (_isDragging && _dragOverIndex != null)
                 _buildDragIndicator(workspaceTheme),
             ],
@@ -120,8 +142,43 @@ class _TabBarWidgetState extends State<TabBarWidget> {
     );
   }
 
-  /// 스크롤 가능한 탭 Row 위젯
-  Widget _buildScrollableTabRow(SplitWorkspaceTabTheme tabTheme) {
+  /// Builds scrollbar with proper theme integration
+  Widget _buildThemedScrollbar(SplitWorkspaceTheme workspaceTheme) {
+    final colorScheme = workspaceTheme.colorScheme;
+    final scrollbarTheme = workspaceTheme.scrollbar;
+
+    // Create ScrollbarThemeData with proper color configuration
+    final scrollbarThemeData = ScrollbarThemeData(
+      thickness: WidgetStateProperty.all(scrollbarTheme.thickness),
+      thumbColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.hovered)) {
+          return scrollbarTheme.hoverColor ??
+              scrollbarTheme.thumbColor?.withOpacity(0.8) ??
+              colorScheme.outline.withOpacity(0.8);
+        }
+        return scrollbarTheme.thumbColor ?? colorScheme.outline;
+      }),
+      trackColor: WidgetStateProperty.all(
+        scrollbarTheme.trackColor ?? colorScheme.surfaceContainerHighest,
+      ),
+      radius: Radius.circular(scrollbarTheme.radius),
+      trackVisibility: WidgetStateProperty.all(scrollbarTheme.trackVisible),
+      thumbVisibility: WidgetStateProperty.all(scrollbarTheme.alwaysVisible),
+    );
+
+    return ScrollbarTheme(
+      data: scrollbarThemeData,
+      child: Scrollbar(
+        controller: _scrollController,
+        thumbVisibility: scrollbarTheme.alwaysVisible,
+        trackVisibility: scrollbarTheme.trackVisible,
+        child: _buildScrollableTabRow(workspaceTheme),
+      ),
+    );
+  }
+
+  /// Builds the scrollable row of tab items
+  Widget _buildScrollableTabRow(SplitWorkspaceTheme workspaceTheme) {
     return SingleChildScrollView(
       controller: _scrollController,
       scrollDirection: Axis.horizontal,
@@ -139,43 +196,50 @@ class _TabBarWidgetState extends State<TabBarWidget> {
                 : null,
             tabIndex: index,
             workspaceId: widget.workspaceId,
-            theme: widget.theme, // 🆕 테마 전달
+            theme: widget.theme,
           );
         }).toList(),
       ),
     );
   }
 
-  /// 새 탭 추가 버튼
+  /// Builds the add new tab button using colorScheme
   Widget _buildAddTabButton(SplitWorkspaceTheme workspaceTheme) {
+    final colorScheme = workspaceTheme.colorScheme;
     final tabTheme = workspaceTheme.tab;
 
     return Container(
       width: 36,
       height: tabTheme.height,
       decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
         border: Border(
-          right: BorderSide(
-            color: workspaceTheme.borderColor,
-            width: workspaceTheme.borderWidth,
-          ),
+          left: BorderSide(color: colorScheme.dividerColor, width: 1),
+        ),
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(workspaceTheme.borderRadius),
+          bottomRight: Radius.circular(workspaceTheme.borderRadius),
         ),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: widget.onAddTab,
-          child: Icon(Icons.add, size: 16, color: tabTheme.inactiveTextColor),
+          borderRadius: BorderRadius.only(
+            topRight: Radius.circular(workspaceTheme.borderRadius),
+            bottomRight: Radius.circular(workspaceTheme.borderRadius),
+          ),
+          child: Icon(Icons.add, size: 16, color: colorScheme.onSurfaceVariant),
         ),
       ),
     );
   }
 
-  /// 드래그 인디케이터 (세로선)
+  /// Builds the drag drop indicator using colorScheme
   Widget _buildDragIndicator(SplitWorkspaceTheme theme) {
     if (_dragOverIndex == null) return const SizedBox.shrink();
 
-    // 실제 탭 너비 기반으로 인디케이터 위치 계산
+    final colorScheme = theme.colorScheme;
     final tabWidth = _calculateTabWidth();
     final indicatorX = _dragOverIndex! * tabWidth;
 
@@ -184,13 +248,13 @@ class _TabBarWidgetState extends State<TabBarWidget> {
       top: 0,
       child: Container(
         width: 3,
-        height: 36,
+        height: theme.tab.height,
         decoration: BoxDecoration(
-          color: theme.colorScheme.primary,
+          color: colorScheme.primary,
           borderRadius: BorderRadius.circular(1.5),
           boxShadow: [
             BoxShadow(
-              color: theme.colorScheme.primary.withOpacity(0.3),
+              color: colorScheme.primary.withOpacity(0.3),
               blurRadius: 4,
               spreadRadius: 1,
             ),
@@ -200,18 +264,16 @@ class _TabBarWidgetState extends State<TabBarWidget> {
     );
   }
 
-  /// 드래그 오버 인덱스 업데이트
+  /// Updates the drag over index based on mouse position
   void _updateDragOverIndex(Offset offset) {
-    // 실제 렌더링된 위젯의 위치를 기반으로 계산
     final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
 
     int newIndex = 0;
     double accumulatedWidth = 0;
 
-    // 각 탭의 실제 위치를 계산하여 가장 가까운 인덱스 찾기
+    // Calculate the closest index based on actual tab positions
     for (int i = 0; i < widget.tabs.length; i++) {
-      // 탭의 최소/최대 너비를 고려한 실제 너비 추정
       final tabWidth = _calculateTabWidth();
       final tabCenter = accumulatedWidth + (tabWidth / 2);
 
@@ -221,10 +283,10 @@ class _TabBarWidgetState extends State<TabBarWidget> {
       }
 
       accumulatedWidth += tabWidth;
-      newIndex = i + 1; // 마지막 탭 뒤쪽
+      newIndex = i + 1; // After last tab
     }
 
-    // 범위 제한
+    // Clamp to valid range
     newIndex = newIndex.clamp(0, widget.tabs.length);
 
     if (newIndex != _dragOverIndex) {
@@ -234,32 +296,35 @@ class _TabBarWidgetState extends State<TabBarWidget> {
     }
   }
 
-  /// 탭 너비 계산 (constraints에 기반)
+  /// Calculates the width of individual tabs
   double _calculateTabWidth() {
-    // TabItemWidget의 constraints와 동일하게 계산
-    final availableWidth = MediaQuery.of(context).size.width - 36 - 50; // 여유분
+    final tabTheme = widget.theme?.tab ?? const SplitWorkspaceTabTheme();
+    final availableWidth = MediaQuery.of(context).size.width - 36 - 50;
     final tabCount = widget.tabs.length;
 
     if (tabCount == 0) return 120.0;
 
     final calculatedWidth = availableWidth / tabCount;
-    return calculatedWidth.clamp(120.0, 200.0); // TabItemWidget과 동일한 제약
+    return calculatedWidth.clamp(
+      tabTheme.minWidth ?? 120.0,
+      tabTheme.maxWidth ?? 200.0,
+    );
   }
 
-  /// 드롭 처리
+  /// Handles drop operations
   void _handleDrop(DragData dragData) {
-    // 같은 워크스페이스 내에서의 순서 변경만 처리
+    // Handle reordering within the same workspace
     if (dragData.sourceWorkspaceId == widget.workspaceId &&
         _dragOverIndex != null) {
       final oldIndex = dragData.originalIndex;
       final newIndex = _dragOverIndex!;
 
-      // 실제로 위치가 변경된 경우에만 콜백 호출
+      // Only trigger callback if position actually changed
       if (oldIndex != newIndex) {
         widget.onTabReorder?.call(oldIndex, newIndex);
       }
     }
 
-    // TODO: 다른 워크스페이스에서 온 탭 처리는 4단계에서 구현
+    // TODO: Handle cross-workspace drops in future versions
   }
 }

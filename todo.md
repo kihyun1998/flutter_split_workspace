@@ -1,0 +1,1 @@
+todo: bug - 새 탭 추가하면 dragindicator 계산 이상하게 된다.
