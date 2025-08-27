@@ -59,15 +59,12 @@ class _ScrollableTabRowWidgetState extends State<ScrollableTabRowWidget> {
   Widget build(BuildContext context) {
     final workspaceTheme = widget.theme ?? SplitWorkspaceTheme.defaultTheme;
 
-    // Calculate required width for all tabs and indicators
+    // Calculate required width for all tabs
     final tabWidth = workspaceTheme.tab.width;
-    final indicatorWidth = 2.0; // Drop zone indicator width
     final tabCount = widget.tabs.length;
-    final indicatorCount =
-        tabCount + 1; // One before first tab, one after each tab
 
-    final totalWidth =
-        (tabCount * tabWidth) + (indicatorCount * indicatorWidth);
+    // Stack width should only be based on actual tab content + last indicator
+    final totalWidth = tabCount * tabWidth + 2; // +2 for final drop zone indicator width
 
     return SingleChildScrollView(
       controller: widget.scrollController,
