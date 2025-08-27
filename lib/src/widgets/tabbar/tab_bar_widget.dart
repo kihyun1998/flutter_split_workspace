@@ -89,45 +89,75 @@ class _TabBarWidgetState extends State<TabBarWidget> {
             ),
           ),
         ),
-        child: Row(
-          children: [
-            // Scrollable tab area
-            Expanded(
-              child: scrollbarTheme.visible
-                  ? ThemedScrollbarWidget(
-                      theme: workspaceTheme,
-                      scrollController: _scrollController,
-                      showScrollbar: _isHovered,
-                      child: ScrollableTabRowWidget(
-                        tabs: widget.tabs,
-                        activeTabId: widget.activeTabId,
-                        onTabTap: widget.onTabTap,
-                        onTabClose: widget.onTabClose,
-                        workspaceId: widget.workspaceId,
-                        theme: widget.theme,
-                        scrollController: _scrollController,
-                        onTabReorder: widget.onTabReorder,
-                      ),
-                    )
-                  : ScrollableTabRowWidget(
-                      tabs: widget.tabs,
-                      activeTabId: widget.activeTabId,
-                      onTabTap: widget.onTabTap,
-                      onTabClose: widget.onTabClose,
-                      workspaceId: widget.workspaceId,
-                      theme: widget.theme,
-                      scrollController: _scrollController,
-                      onTabReorder: widget.onTabReorder,
-                    ),
-            ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Calculate available width for tabs (excluding add button)
+            final addButtonWidth = widget.onAddTab != null ? 40.0 : 0.0;
+            final availableWidth = constraints.maxWidth - addButtonWidth;
+            
+            // Calculate total width needed for all tabs
+            final tabWidth = tabTheme.width;
+            final totalTabsWidth = widget.tabs.length * tabWidth + 2; // +2 for drop zone indicators
+            
+            // Determine if scrolling is needed
+            final needsScrolling = totalTabsWidth > availableWidth;
 
-            // Add tab button (always visible)
-            if (widget.onAddTab != null)
-              AddTabButtonWidget(
-                theme: workspaceTheme,
-                onAddTab: widget.onAddTab,
-              ),
-          ],
+            return Row(
+              children: [
+                // Scrollable tab area
+                Expanded(
+                  child: needsScrolling
+                      ? (scrollbarTheme.visible
+                          ? ThemedScrollbarWidget(
+                              theme: workspaceTheme,
+                              scrollController: _scrollController,
+                              showScrollbar: _isHovered,
+                              child: ScrollableTabRowWidget(
+                                tabs: widget.tabs,
+                                activeTabId: widget.activeTabId,
+                                onTabTap: widget.onTabTap,
+                                onTabClose: widget.onTabClose,
+                                workspaceId: widget.workspaceId,
+                                theme: widget.theme,
+                                scrollController: _scrollController,
+                                onTabReorder: widget.onTabReorder,
+                                availableWidth: availableWidth,
+                              ),
+                            )
+                          : ScrollableTabRowWidget(
+                              tabs: widget.tabs,
+                              activeTabId: widget.activeTabId,
+                              onTabTap: widget.onTabTap,
+                              onTabClose: widget.onTabClose,
+                              workspaceId: widget.workspaceId,
+                              theme: widget.theme,
+                              scrollController: _scrollController,
+                              onTabReorder: widget.onTabReorder,
+                              availableWidth: availableWidth,
+                            ))
+                      : // No scrolling needed - show tabs directly
+                      ScrollableTabRowWidget(
+                          tabs: widget.tabs,
+                          activeTabId: widget.activeTabId,
+                          onTabTap: widget.onTabTap,
+                          onTabClose: widget.onTabClose,
+                          workspaceId: widget.workspaceId,
+                          theme: widget.theme,
+                          scrollController: _scrollController,
+                          onTabReorder: widget.onTabReorder,
+                          availableWidth: availableWidth,
+                        ),
+                ),
+
+                // Add tab button (always visible)
+                if (widget.onAddTab != null)
+                  AddTabButtonWidget(
+                    theme: workspaceTheme,
+                    onAddTab: widget.onAddTab,
+                  ),
+              ],
+            );
+          },
         ),
       ),
     );

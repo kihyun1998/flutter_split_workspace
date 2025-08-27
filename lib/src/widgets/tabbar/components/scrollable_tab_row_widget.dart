@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../models/drag_data.dart';
 import '../../../models/tab_data.dart';
 import '../../../theme/split_workspace_theme.dart';
 import '../../tab_item/tab_item_widget.dart';
@@ -35,6 +36,9 @@ class ScrollableTabRowWidget extends StatefulWidget {
   /// Callback when tabs are reordered via drag and drop
   final Function(int oldIndex, int newIndex)? onTabReorder;
 
+  /// Available width for the tab area (used for scroll optimization)
+  final double? availableWidth;
+
   const ScrollableTabRowWidget({
     super.key,
     required this.tabs,
@@ -45,6 +49,7 @@ class ScrollableTabRowWidget extends StatefulWidget {
     this.theme,
     required this.scrollController,
     this.onTabReorder,
+    this.availableWidth,
   });
 
   @override
@@ -64,44 +69,103 @@ class _ScrollableTabRowWidgetState extends State<ScrollableTabRowWidget> {
     final tabCount = widget.tabs.length;
 
     // Stack width should only be based on actual tab content + last indicator
-    final totalWidth = tabCount * tabWidth + 2; // +2 for final drop zone indicator width
+    final totalWidth =
+        tabCount * tabWidth + 2; // +2 for final drop zone indicator width
 
+    // Use available width if provided and tabs fit within it, otherwise use calculated total width
+    final containerWidth =
+        widget.availableWidth != null && totalWidth <= widget.availableWidth!
+        ? widget.availableWidth!
+        : totalWidth;
+
+    final tabsRow = Row(
+      children: widget.tabs.asMap().entries.map((entry) {
+        final index = entry.key;
+        final tab = entry.value;
+
+        return TabItemWidget(
+          tab: tab,
+          isActive: tab.id == widget.activeTabId,
+          onTap: () => widget.onTabTap?.call(tab.id),
+          onClose: tab.closeable ? () => widget.onTabClose?.call(tab.id) : null,
+          tabIndex: index,
+          workspaceId: widget.workspaceId,
+          theme: widget.theme,
+          onTabReorder: widget.onTabReorder,
+          onLeftHover: () => _activateDropZone(index),
+          onRightHover: () => _activateDropZone(index + 1),
+          onHoverEnd: () => _deactivateDropZone(),
+        );
+      }).toList(),
+    );
+
+    final stackContent = Stack(
+      children: [
+        // Regular tabs row
+        tabsRow,
+        // Fixed positioned drop zone indicators
+        ..._buildDropZoneIndicators(workspaceTheme),
+      ],
+    );
+
+    // If tabs fit within available width, no need for horizontal scrolling
+    if (widget.availableWidth != null && totalWidth <= widget.availableWidth!) {
+      final remainingWidth = widget.availableWidth! - totalWidth;
+
+      return SizedBox(
+        width: containerWidth,
+        child: Stack(
+          children: [
+            // Original tab content
+            stackContent,
+            // DragTarget container showing remaining width
+            if (remainingWidth > 0)
+              Positioned(
+                right: 0,
+                top: 0,
+                child: DragTarget<DragData>(
+                  onAcceptWithDetails: (details) {
+                    // Move tab to last position
+                    if (_canAcceptDrag(details.data)) {
+                      final targetIndex = widget.tabs.length; // Last position
+                      widget.onTabReorder?.call(
+                        details.data.originalIndex,
+                        targetIndex,
+                      );
+                    }
+
+                    // Deactivate drop zone after drop
+                    _deactivateDropZone();
+                  },
+                  onWillAcceptWithDetails: (details) {
+                    return _canAcceptDrag(details.data);
+                  },
+                  onMove: (details) {
+                    // Activate last drop zone indicator when dragging over
+                    _activateDropZone(widget.tabs.length);
+                  },
+                  onLeave: (details) {
+                    // Deactivate drop zone when leaving
+                    _deactivateDropZone();
+                  },
+                  builder: (context, candidateData, rejectedData) {
+                    return SizedBox(
+                      width: remainingWidth,
+                      height: workspaceTheme.tab.height,
+                    );
+                  },
+                ),
+              ),
+          ],
+        ),
+      );
+    }
+
+    // Otherwise, use horizontal scrolling
     return SingleChildScrollView(
       controller: widget.scrollController,
       scrollDirection: Axis.horizontal,
-      child: SizedBox(
-        width: totalWidth,
-        child: Stack(
-          children: [
-            // Regular tabs row
-            Row(
-              children: widget.tabs.asMap().entries.map((entry) {
-                final index = entry.key;
-                final tab = entry.value;
-
-                return TabItemWidget(
-                  tab: tab,
-                  isActive: tab.id == widget.activeTabId,
-                  onTap: () => widget.onTabTap?.call(tab.id),
-                  onClose: tab.closeable
-                      ? () => widget.onTabClose?.call(tab.id)
-                      : null,
-                  tabIndex: index,
-                  workspaceId: widget.workspaceId,
-                  theme: widget.theme,
-                  onTabReorder: widget.onTabReorder,
-                  onLeftHover: () => _activateDropZone(index),
-                  onRightHover: () => _activateDropZone(index + 1),
-                  onHoverEnd: () => _deactivateDropZone(),
-                );
-              }).toList(),
-            ),
-
-            // Fixed positioned drop zone indicators
-            ..._buildDropZoneIndicators(workspaceTheme),
-          ],
-        ),
-      ),
+      child: SizedBox(width: totalWidth, child: stackContent),
     );
   }
 
@@ -167,5 +231,11 @@ class _ScrollableTabRowWidgetState extends State<ScrollableTabRowWidget> {
         _activeDropZone = -1;
       });
     }
+  }
+
+  /// Checks if a dragged tab can be accepted
+  bool _canAcceptDrag(DragData dragData) {
+    // Accept if from same workspace and not trying to move to same position
+    return dragData.sourceWorkspaceId == widget.workspaceId;
   }
 }
