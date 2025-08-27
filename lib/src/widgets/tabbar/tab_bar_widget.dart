@@ -1,12 +1,9 @@
 // lib/src/widgets/tab_bar_widget.dart (스크롤바 색상 수정)
 import 'package:flutter/material.dart';
 
-import '../../models/drag_data.dart';
 import '../../models/tab_data.dart';
-import '../../theme/split_workspace_tab_theme.dart';
 import '../../theme/split_workspace_theme.dart';
 import 'components/add_tab_button_widget.dart';
-import 'components/drag_indicator_widget.dart';
 import 'components/scrollable_tab_row_widget.dart';
 import 'components/themed_scrollbar_widget.dart';
 
@@ -60,12 +57,6 @@ class TabBarWidget extends StatefulWidget {
 }
 
 class _TabBarWidgetState extends State<TabBarWidget> {
-  /// Index where a dragged tab would be inserted
-  int? _dragOverIndex;
-
-  /// Whether a drag operation is currently in progress
-  bool _isDragging = false;
-
   /// Whether the tab bar is currently being hovered
   bool _isHovered = false;
 
@@ -98,157 +89,47 @@ class _TabBarWidgetState extends State<TabBarWidget> {
             ),
           ),
         ),
-        child: DragTarget<DragData>(
-          onWillAcceptWithDetails: (details) {
-            setState(() {
-              _isDragging = true;
-            });
-            return true;
-          },
-          onLeave: (data) {
-            setState(() {
-              _isDragging = false;
-              _dragOverIndex = null;
-            });
-          },
-          onMove: (details) {
-            _updateDragOverIndex(details.offset);
-          },
-          onAcceptWithDetails: (details) {
-            _handleDrop(details.data);
-            setState(() {
-              _isDragging = false;
-              _dragOverIndex = null;
-            });
-          },
-          builder: (context, candidateData, rejectedData) {
-            return Stack(
-              children: [
-                // Main tab bar layout
-                Row(
-                  children: [
-                    // Scrollable tab area
-                    Expanded(
-                      child: scrollbarTheme.visible
-                          ? ThemedScrollbarWidget(
-                              theme: workspaceTheme,
-                              scrollController: _scrollController,
-                              showScrollbar: _isHovered,
-                              child: ScrollableTabRowWidget(
-                                tabs: widget.tabs,
-                                activeTabId: widget.activeTabId,
-                                onTabTap: widget.onTabTap,
-                                onTabClose: widget.onTabClose,
-                                workspaceId: widget.workspaceId,
-                                theme: widget.theme,
-                                scrollController: _scrollController,
-                              ),
-                            )
-                          : ScrollableTabRowWidget(
-                              tabs: widget.tabs,
-                              activeTabId: widget.activeTabId,
-                              onTabTap: widget.onTabTap,
-                              onTabClose: widget.onTabClose,
-                              workspaceId: widget.workspaceId,
-                              theme: widget.theme,
-                              scrollController: _scrollController,
-                            ),
-                    ),
-
-                    // Add tab button (always visible)
-                    if (widget.onAddTab != null)
-                      AddTabButtonWidget(
-                        theme: workspaceTheme,
-                        onAddTab: widget.onAddTab,
+        child: Row(
+          children: [
+            // Scrollable tab area
+            Expanded(
+              child: scrollbarTheme.visible
+                  ? ThemedScrollbarWidget(
+                      theme: workspaceTheme,
+                      scrollController: _scrollController,
+                      showScrollbar: _isHovered,
+                      child: ScrollableTabRowWidget(
+                        tabs: widget.tabs,
+                        activeTabId: widget.activeTabId,
+                        onTabTap: widget.onTabTap,
+                        onTabClose: widget.onTabClose,
+                        workspaceId: widget.workspaceId,
+                        theme: widget.theme,
+                        scrollController: _scrollController,
+                        onTabReorder: widget.onTabReorder,
                       ),
-                  ],
-                ),
+                    )
+                  : ScrollableTabRowWidget(
+                      tabs: widget.tabs,
+                      activeTabId: widget.activeTabId,
+                      onTabTap: widget.onTabTap,
+                      onTabClose: widget.onTabClose,
+                      workspaceId: widget.workspaceId,
+                      theme: widget.theme,
+                      scrollController: _scrollController,
+                      onTabReorder: widget.onTabReorder,
+                    ),
+            ),
 
-                // Drag indicator
-                if (_isDragging && _dragOverIndex != null)
-                  DragIndicatorWidget(
-                    theme: workspaceTheme,
-                    dragOverIndex: _dragOverIndex,
-                    tabWidth: _calculateTabWidth(),
-                  ),
-              ],
-            );
-          },
+            // Add tab button (always visible)
+            if (widget.onAddTab != null)
+              AddTabButtonWidget(
+                theme: workspaceTheme,
+                onAddTab: widget.onAddTab,
+              ),
+          ],
         ),
       ),
     );
-  }
-
-  /// Updates the drag over index based on the current mouse position.
-  ///
-  /// Calculates which tab position the mouse is currently over during
-  /// a drag operation, updating the visual indicator accordingly.
-  void _updateDragOverIndex(Offset offset) {
-    final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
-    if (renderBox == null) return;
-
-    int newIndex = 0;
-    double accumulatedWidth = 0;
-
-    // Calculate the closest index based on actual tab positions
-    for (int i = 0; i < widget.tabs.length; i++) {
-      final tabWidth = _calculateTabWidth();
-      final tabCenter = accumulatedWidth + (tabWidth / 2);
-
-      if (offset.dx < tabCenter) {
-        newIndex = i;
-        break;
-      }
-
-      accumulatedWidth += tabWidth;
-      newIndex = i + 1; // After last tab
-    }
-
-    // Clamp to valid range
-    newIndex = newIndex.clamp(0, widget.tabs.length);
-
-    if (newIndex != _dragOverIndex) {
-      setState(() {
-        _dragOverIndex = newIndex;
-      });
-    }
-  }
-
-  /// Calculates the optimal width for individual tabs.
-  ///
-  /// Determines tab width based on available space, tab count, and
-  /// theme constraints (minimum and maximum width limits).
-  double _calculateTabWidth() {
-    final tabTheme = widget.theme?.tab ?? const SplitWorkspaceTabTheme();
-    final availableWidth = MediaQuery.of(context).size.width - 36 - 50;
-    final tabCount = widget.tabs.length;
-
-    if (tabCount == 0) return 120.0;
-
-    final calculatedWidth = availableWidth / tabCount;
-    return calculatedWidth.clamp(
-      tabTheme.minWidth ?? 120.0,
-      tabTheme.maxWidth ?? 200.0,
-    );
-  }
-
-  /// Handles the completion of drag and drop operations.
-  ///
-  /// Processes the dropped tab data to determine if reordering should occur,
-  /// and triggers the appropriate callback with the old and new indices.
-  void _handleDrop(DragData dragData) {
-    // Handle reordering within the same workspace
-    if (dragData.sourceWorkspaceId == widget.workspaceId &&
-        _dragOverIndex != null) {
-      final oldIndex = dragData.originalIndex;
-      final newIndex = _dragOverIndex!;
-
-      // Only trigger callback if position actually changed
-      if (oldIndex != newIndex) {
-        widget.onTabReorder?.call(oldIndex, newIndex);
-      }
-    }
-
-    // TODO: Handle cross-workspace drops in future versions
   }
 }
