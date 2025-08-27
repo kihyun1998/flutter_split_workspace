@@ -59,38 +59,51 @@ class _ScrollableTabRowWidgetState extends State<ScrollableTabRowWidget> {
   Widget build(BuildContext context) {
     final workspaceTheme = widget.theme ?? SplitWorkspaceTheme.defaultTheme;
 
+    // Calculate required width for all tabs and indicators
+    final tabWidth = workspaceTheme.tab.width;
+    final indicatorWidth = 2.0; // Drop zone indicator width
+    final tabCount = widget.tabs.length;
+    final indicatorCount =
+        tabCount + 1; // One before first tab, one after each tab
+
+    final totalWidth =
+        (tabCount * tabWidth) + (indicatorCount * indicatorWidth);
+
     return SingleChildScrollView(
       controller: widget.scrollController,
       scrollDirection: Axis.horizontal,
-      child: Stack(
-        children: [
-          // Regular tabs row
-          Row(
-            children: widget.tabs.asMap().entries.map((entry) {
-              final index = entry.key;
-              final tab = entry.value;
+      child: SizedBox(
+        width: totalWidth,
+        child: Stack(
+          children: [
+            // Regular tabs row
+            Row(
+              children: widget.tabs.asMap().entries.map((entry) {
+                final index = entry.key;
+                final tab = entry.value;
 
-              return TabItemWidget(
-                tab: tab,
-                isActive: tab.id == widget.activeTabId,
-                onTap: () => widget.onTabTap?.call(tab.id),
-                onClose: tab.closeable
-                    ? () => widget.onTabClose?.call(tab.id)
-                    : null,
-                tabIndex: index,
-                workspaceId: widget.workspaceId,
-                theme: widget.theme,
-                onTabReorder: widget.onTabReorder,
-                onLeftHover: () => _activateDropZone(index),
-                onRightHover: () => _activateDropZone(index + 1),
-                onHoverEnd: () => _deactivateDropZone(),
-              );
-            }).toList(),
-          ),
+                return TabItemWidget(
+                  tab: tab,
+                  isActive: tab.id == widget.activeTabId,
+                  onTap: () => widget.onTabTap?.call(tab.id),
+                  onClose: tab.closeable
+                      ? () => widget.onTabClose?.call(tab.id)
+                      : null,
+                  tabIndex: index,
+                  workspaceId: widget.workspaceId,
+                  theme: widget.theme,
+                  onTabReorder: widget.onTabReorder,
+                  onLeftHover: () => _activateDropZone(index),
+                  onRightHover: () => _activateDropZone(index + 1),
+                  onHoverEnd: () => _deactivateDropZone(),
+                );
+              }).toList(),
+            ),
 
-          // Fixed positioned drop zone indicators
-          ..._buildDropZoneIndicators(workspaceTheme),
-        ],
+            // Fixed positioned drop zone indicators
+            ..._buildDropZoneIndicators(workspaceTheme),
+          ],
+        ),
       ),
     );
   }
