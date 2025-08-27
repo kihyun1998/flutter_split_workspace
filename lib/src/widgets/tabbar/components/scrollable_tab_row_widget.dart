@@ -69,8 +69,7 @@ class _ScrollableTabRowWidgetState extends State<ScrollableTabRowWidget> {
     final tabCount = widget.tabs.length;
 
     // Stack width should only be based on actual tab content + last indicator
-    final totalWidth =
-        tabCount * tabWidth + 2; // +2 for final drop zone indicator width
+    final totalWidth = tabCount * tabWidth;
 
     // Use available width if provided and tabs fit within it, otherwise use calculated total width
     final containerWidth =
@@ -194,11 +193,9 @@ class _ScrollableTabRowWidgetState extends State<ScrollableTabRowWidget> {
 
     // Drop zones after each tab
     for (int i = 0; i < widget.tabs.length; i++) {
-      final left = (i + 1) * tabWidth; // 각 탭 뒤
-
       indicators.add(
         Positioned(
-          left: left,
+          left: (i + 1) * tabWidth - 1,
           top: 0,
           child: DropZoneIndicator(
             index: i + 1,
