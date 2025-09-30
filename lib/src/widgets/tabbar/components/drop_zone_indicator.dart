@@ -17,8 +17,11 @@ class DropZoneIndicator extends StatelessWidget {
   /// Theme configuration for styling
   final SplitWorkspaceTheme theme;
 
-  /// Callback when a tab is dropped on this zone
+  /// Callback when tabs are reordered within the same group
   final Function(int sourceIndex, int targetIndex)? onTabReorder;
+
+  /// Callback when a tab is moved to a different group
+  final Function(String tabId, String targetGroupId, int insertIndex)? onTabMoveToGroup;
 
   /// Callback when drop operation completes
   final VoidCallback? onDropComplete;
@@ -26,14 +29,19 @@ class DropZoneIndicator extends StatelessWidget {
   /// Current workspace ID
   final String workspaceId;
 
+  /// Current group ID
+  final String groupId;
+
   const DropZoneIndicator({
     super.key,
     required this.index,
     required this.isActive,
     required this.theme,
     this.onTabReorder,
+    this.onTabMoveToGroup,
     this.onDropComplete,
     required this.workspaceId,
+    required this.groupId,
   });
 
   @override
@@ -69,9 +77,20 @@ class DropZoneIndicator extends StatelessWidget {
 
   /// Handles drop on this zone
   void _handleDrop(DragData dragData) {
-    if (_canAcceptDrag(dragData)) {
+    if (!_canAcceptDrag(dragData)) {
+      onDropComplete?.call();
+      return;
+    }
+
+    // Same group: reorder
+    if (dragData.sourceGroupId == groupId) {
       onTabReorder?.call(dragData.originalIndex, index);
     }
+    // Different group: move to this group
+    else {
+      onTabMoveToGroup?.call(dragData.tab.id, groupId, index);
+    }
+
     // 드롭 완료 후 콜백 호출
     onDropComplete?.call();
   }

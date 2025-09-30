@@ -359,38 +359,19 @@ class _ExampleScreenState extends State<ExampleScreen> {
     });
   }
 
-  void _onAddTab() {
+
+  void _onTabReorder(String groupId, int oldIndex, int newIndex) {
     setState(() {
-      _tabCounter++;
-      final colors = [
-        Colors.red,
-        Colors.teal,
-        Colors.pink,
-        Colors.indigo,
-        Colors.amber,
-        Colors.cyan,
-      ];
-      final color = colors[(_tabCounter - 1) % colors.length];
+      // Find the group
+      final group = WorkspaceHelpers.findGroupById(workspace, groupId);
+      if (group == null || group.tabs == null || oldIndex >= group.tabs!.length) {
+        return;
+      }
 
-      workspace = TabService.addTabToGroup(
-        workspace,
-        'root', // Add to root group
-        title: 'New Tab $_tabCounter',
-        content: _buildTabContent('New Tab $_tabCounter', color),
-        makeActive: true,
-      );
-    });
-  }
+      // Get the tab at oldIndex in this group
+      final tabId = group.tabs![oldIndex].id;
 
-  void _onTabReorder(int oldIndex, int newIndex) {
-    // Get the tab at oldIndex
-    if (workspace.tabs == null || oldIndex >= workspace.tabs!.length) {
-      return;
-    }
-
-    final tabId = workspace.tabs![oldIndex].id;
-
-    setState(() {
+      // Reorder using service
       workspace = TabService.reorderTab(workspace, tabId, newIndex);
     });
   }
@@ -413,6 +394,81 @@ class _ExampleScreenState extends State<ExampleScreen> {
           result.emptyGroupId!,
         );
       }
+    });
+  }
+
+  void _onAddTabToGroup(String groupId) {
+    setState(() {
+      _tabCounter++;
+      final colors = [
+        Colors.red,
+        Colors.teal,
+        Colors.pink,
+        Colors.indigo,
+        Colors.amber,
+        Colors.cyan,
+      ];
+      final color = colors[(_tabCounter - 1) % colors.length];
+
+      workspace = TabService.addTabToGroup(
+        workspace,
+        groupId,
+        title: 'New Tab $_tabCounter',
+        content: _buildTabContent('New Tab $_tabCounter', color),
+        makeActive: true,
+      );
+    });
+  }
+
+  void _testSplitLeft() {
+    setState(() {
+      // Split the first tab to the left
+      if (workspace.tabs != null && workspace.tabs!.isNotEmpty) {
+        final result = SplitService.createSplitWithResult(
+          workspace,
+          sourceTabId: workspace.tabs!.first.id,
+          dropZone: DropZoneType.splitLeft,
+        );
+
+        workspace = result.newState;
+
+        // Clean up if needed
+        if (result.needsEmptyGroupCleanup && result.emptyGroupId != null) {
+          workspace = SplitService.removeEmptyGroup(
+            workspace,
+            result.emptyGroupId!,
+          );
+        }
+      }
+    });
+  }
+
+  void _testSplitTop() {
+    setState(() {
+      // Split the first tab to the top
+      if (workspace.tabs != null && workspace.tabs!.isNotEmpty) {
+        final result = SplitService.createSplitWithResult(
+          workspace,
+          sourceTabId: workspace.tabs!.first.id,
+          dropZone: DropZoneType.splitTop,
+        );
+
+        workspace = result.newState;
+
+        // Clean up if needed
+        if (result.needsEmptyGroupCleanup && result.emptyGroupId != null) {
+          workspace = SplitService.removeEmptyGroup(
+            workspace,
+            result.emptyGroupId!,
+          );
+        }
+      }
+    });
+  }
+
+  void _resetWorkspace() {
+    setState(() {
+      _initializeTabs();
     });
   }
 
@@ -466,20 +522,66 @@ class _ExampleScreenState extends State<ExampleScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: TabWorkspace(
-          tabs: workspace.tabs ?? [],
-          activeTabId: workspace.activeTabId,
-          onTabTap: _onTabTap,
-          onTabClose: _onTabClose,
-          onAddTab: _onAddTab,
-          onTabReorder: _onTabReorder,
-          onTabMoveToGroup: _onTabMoveToGroup,
-          workspaceId: 'main_workspace',
-          groupId: 'root',
-          theme: _currentTheme,
-        ),
+      body: Column(
+        children: [
+          // Test buttons
+          Container(
+            padding: const EdgeInsets.all(8),
+            color: Colors.grey[200],
+            child: Row(
+              children: [
+                ElevatedButton.icon(
+                  onPressed: _testSplitLeft,
+                  icon: const Icon(Icons.view_sidebar, size: 16),
+                  label: const Text('Split Left'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton.icon(
+                  onPressed: _testSplitTop,
+                  icon: const Icon(Icons.horizontal_split, size: 16),
+                  label: const Text('Split Top'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton.icon(
+                  onPressed: _resetWorkspace,
+                  icon: const Icon(Icons.refresh, size: 16),
+                  label: const Text('Reset'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  'Groups: ${WorkspaceHelpers.countGroups(workspace)} | Tabs: ${WorkspaceHelpers.countTabs(workspace)}',
+                  style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                ),
+              ],
+            ),
+          ),
+
+          // Workspace
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: SplitWorkspace(
+                workspace: workspace,
+                onTabTap: _onTabTap,
+                onTabClose: _onTabClose,
+                onAddTab: (groupId) => _onAddTabToGroup(groupId),
+                onTabReorder: _onTabReorder,
+                onTabMoveToGroup: _onTabMoveToGroup,
+                workspaceId: 'main_workspace',
+                theme: _currentTheme,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

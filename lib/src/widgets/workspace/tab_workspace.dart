@@ -30,7 +30,7 @@ class TabWorkspace extends StatelessWidget {
   final VoidCallback? onAddTab;
 
   /// Callback when tabs are reordered (within same group)
-  final Function(int oldIndex, int newIndex)? onTabReorder;
+  final Function(String groupId, int oldIndex, int newIndex)? onTabReorder;
 
   /// Callback when a tab is moved to a different group
   final Function(String tabId, String targetGroupId, int insertIndex)? onTabMoveToGroup;
@@ -117,7 +117,9 @@ class TabWorkspace extends StatelessWidget {
             onTabTap: onTabTap,
             onTabClose: onTabClose,
             onAddTab: onAddTab,
-            onTabReorder: onTabReorder,
+            onTabReorder: onTabReorder != null
+                ? (oldIndex, newIndex) => onTabReorder!(effectiveGroupId, oldIndex, newIndex)
+                : null,
             onTabMoveToGroup: onTabMoveToGroup,
             workspaceId: effectiveWorkspaceId,
             groupId: effectiveGroupId,

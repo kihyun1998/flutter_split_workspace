@@ -134,11 +134,26 @@ class _ScrollableTabRowWidgetState extends State<ScrollableTabRowWidget> {
                 top: 0,
                 child: DragTarget<DragData>(
                   onAcceptWithDetails: (details) {
-                    // Move tab to last position
-                    if (_canAcceptDrag(details.data)) {
-                      final targetIndex = widget.tabs.length; // Last position
+                    // Accept from same workspace
+                    if (details.data.sourceWorkspaceId != widget.workspaceId) {
+                      _deactivateDropZone();
+                      return;
+                    }
+
+                    final targetIndex = widget.tabs.length; // Last position
+
+                    // Same group: reorder
+                    if (details.data.sourceGroupId == widget.groupId) {
                       widget.onTabReorder?.call(
                         details.data.originalIndex,
+                        targetIndex,
+                      );
+                    }
+                    // Different group: move to this group
+                    else {
+                      widget.onTabMoveToGroup?.call(
+                        details.data.tab.id,
+                        widget.groupId,
                         targetIndex,
                       );
                     }
@@ -147,7 +162,8 @@ class _ScrollableTabRowWidgetState extends State<ScrollableTabRowWidget> {
                     _deactivateDropZone();
                   },
                   onWillAcceptWithDetails: (details) {
-                    return _canAcceptDrag(details.data);
+                    // Accept if from same workspace
+                    return details.data.sourceWorkspaceId == widget.workspaceId;
                   },
                   onMove: (details) {
                     // Activate last drop zone indicator when dragging over
@@ -195,8 +211,10 @@ class _ScrollableTabRowWidgetState extends State<ScrollableTabRowWidget> {
           isActive: _activeDropZone == 0,
           theme: workspaceTheme,
           onTabReorder: widget.onTabReorder,
+          onTabMoveToGroup: widget.onTabMoveToGroup,
           onDropComplete: () => _deactivateDropZone(),
           workspaceId: widget.workspaceId,
+          groupId: widget.groupId,
         ),
       ),
     );
@@ -212,8 +230,10 @@ class _ScrollableTabRowWidgetState extends State<ScrollableTabRowWidget> {
             isActive: _activeDropZone == i + 1,
             theme: workspaceTheme,
             onTabReorder: widget.onTabReorder,
+            onTabMoveToGroup: widget.onTabMoveToGroup,
             onDropComplete: () => _deactivateDropZone(),
             workspaceId: widget.workspaceId,
+            groupId: widget.groupId,
           ),
         ),
       );
@@ -242,7 +262,7 @@ class _ScrollableTabRowWidgetState extends State<ScrollableTabRowWidget> {
 
   /// Checks if a dragged tab can be accepted
   bool _canAcceptDrag(DragData dragData) {
-    // Accept if from same workspace and not trying to move to same position
+    // Accept if from same workspace
     return dragData.sourceWorkspaceId == widget.workspaceId;
   }
 }

@@ -25,3 +25,5 @@ export 'src/theme/split_workspace_theme.dart';
 export 'src/widgets/tab_item/tab_item_widget.dart';
 export 'src/widgets/tabbar/tab_bar_widget.dart';
 export 'src/widgets/workspace/tab_workspace.dart';
+export 'src/widgets/workspace/split_workspace.dart';
+export 'src/widgets/splitter/splitter_widget.dart';
