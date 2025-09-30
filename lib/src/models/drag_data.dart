@@ -29,6 +29,14 @@ class DragData {
   /// Currently used for validation and debugging purposes.
   final String sourceWorkspaceId;
 
+  /// Identifier of the group where the drag originated.
+  ///
+  /// Used to track which group (split panel) the tab came from.
+  /// This enables cross-group tab movement in split workspaces.
+  /// When not using split functionality, this can be set to the same
+  /// value as [sourceWorkspaceId].
+  final String sourceGroupId;
+
   /// Creates a new drag data instance.
   ///
   /// All parameters are required as they're essential for tracking
@@ -37,6 +45,7 @@ class DragData {
     required this.tab,
     required this.originalIndex,
     required this.sourceWorkspaceId,
+    required this.sourceGroupId,
   });
 
   /// Creates a copy of this drag data with some properties replaced.
@@ -54,11 +63,13 @@ class DragData {
     TabData? tab,
     int? originalIndex,
     String? sourceWorkspaceId,
+    String? sourceGroupId,
   }) {
     return DragData(
       tab: tab ?? this.tab,
       originalIndex: originalIndex ?? this.originalIndex,
       sourceWorkspaceId: sourceWorkspaceId ?? this.sourceWorkspaceId,
+      sourceGroupId: sourceGroupId ?? this.sourceGroupId,
     );
   }
 }

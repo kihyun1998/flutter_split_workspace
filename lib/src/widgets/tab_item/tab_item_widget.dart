@@ -75,6 +75,7 @@ class TabItemWidget extends StatelessWidget {
               tab: tab,
               originalIndex: tabIndex,
               sourceWorkspaceId: workspaceId,
+              sourceGroupId: workspaceId, // TODO: Replace with actual groupId in Phase 3
             ),
             delay: const Duration(milliseconds: 200),
             feedback: _buildDragFeedback(context, workspaceTheme),
