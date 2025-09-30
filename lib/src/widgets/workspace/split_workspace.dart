@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../enums/drop_zone_type.dart';
 import '../../enums/split_direction.dart';
 import '../../models/split_panel.dart';
 import '../../theme/split_workspace_theme.dart';
+import '../drag_config.dart';
 import '../splitter/splitter_widget.dart';
 import 'tab_workspace.dart';
 
@@ -44,6 +46,10 @@ class SplitWorkspace extends StatelessWidget {
   final Function(String tabId, String targetGroupId, int insertIndex)?
       onTabMoveToGroup;
 
+  /// Callback when a tab is dropped to create a split
+  final Function(String sourceTabId, String targetGroupId, DropZoneType dropZone)?
+      onSplitRequest;
+
   /// Callback when split ratio is changed (Phase 7)
   final Function(String splitId, double newRatio)? onRatioChanged;
 
@@ -61,6 +67,7 @@ class SplitWorkspace extends StatelessWidget {
     this.onAddTab,
     this.onTabReorder,
     this.onTabMoveToGroup,
+    this.onSplitRequest,
     this.onRatioChanged,
     this.workspaceId,
     this.theme,
@@ -71,23 +78,25 @@ class SplitWorkspace extends StatelessWidget {
     final workspaceTheme = theme ?? SplitWorkspaceTheme.defaultTheme;
     final effectiveWorkspaceId = workspaceId ?? 'default';
 
-    return Container(
-      decoration: BoxDecoration(
-        color: workspaceTheme.effectiveBackgroundColor,
-        borderRadius: BorderRadius.circular(workspaceTheme.borderRadius),
-        border: workspaceTheme.borderWidth > 0
-            ? Border.all(
-                color: workspaceTheme.effectiveBorderColor,
-                width: workspaceTheme.borderWidth,
-              )
-            : null,
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(workspaceTheme.borderRadius),
-        child: _buildPanel(
-          workspace,
-          effectiveWorkspaceId,
-          workspaceTheme,
+    return DragConfigProvider(
+      child: Container(
+        decoration: BoxDecoration(
+          color: workspaceTheme.effectiveBackgroundColor,
+          borderRadius: BorderRadius.circular(workspaceTheme.borderRadius),
+          border: workspaceTheme.borderWidth > 0
+              ? Border.all(
+                  color: workspaceTheme.effectiveBorderColor,
+                  width: workspaceTheme.borderWidth,
+                )
+              : null,
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(workspaceTheme.borderRadius),
+          child: _buildPanel(
+            workspace,
+            effectiveWorkspaceId,
+            workspaceTheme,
+          ),
         ),
       ),
     );
@@ -111,6 +120,9 @@ class SplitWorkspace extends StatelessWidget {
             ? (groupId, oldIndex, newIndex) => onTabReorder!(groupId, oldIndex, newIndex)
             : null,
         onTabMoveToGroup: onTabMoveToGroup,
+        onSplitRequest: onSplitRequest != null
+            ? (sourceTabId, dropZone) => onSplitRequest!(sourceTabId, panel.id, dropZone)
+            : null,
         workspaceId: workspaceId,
         groupId: panel.id,
         theme: workspaceTheme,

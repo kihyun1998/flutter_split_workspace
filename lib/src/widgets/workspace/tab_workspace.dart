@@ -2,8 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_split_workspace/src/theme/split_workspace_color_scheme_theme.dart';
 
+import '../../enums/drop_zone_type.dart';
+import '../../models/drag_data.dart';
 import '../../models/tab_data.dart';
 import '../../theme/split_workspace_theme.dart';
+import '../drop_target_content.dart';
 import '../tabbar/tab_bar_widget.dart';
 
 /// Main workspace widget that combines tab bar and content area
@@ -34,6 +37,9 @@ class TabWorkspace extends StatelessWidget {
 
   /// Callback when a tab is moved to a different group
   final Function(String tabId, String targetGroupId, int insertIndex)? onTabMoveToGroup;
+
+  /// Callback when a tab is dropped to create a split
+  final Function(String sourceTabId, DropZoneType dropZone)? onSplitRequest;
 
   /// Unique workspace identifier
   final String? workspaceId;
@@ -72,6 +78,7 @@ class TabWorkspace extends StatelessWidget {
     this.onAddTab,
     this.onTabReorder,
     this.onTabMoveToGroup,
+    this.onSplitRequest,
     this.workspaceId,
     this.groupId,
     this.theme,
@@ -87,6 +94,34 @@ class TabWorkspace extends StatelessWidget {
       return tabs.firstWhere((tab) => tab.id == activeTabId);
     } catch (e) {
       return null;
+    }
+  }
+
+  /// Handles tab drop on content area.
+  ///
+  /// If drop zone is center (moveToGroup), moves the tab to this group.
+  /// Otherwise, creates a split via onSplitRequest callback.
+  void _handleDrop(
+    DragData dragData,
+    DropZoneType dropZone,
+    String targetGroupId,
+  ) {
+    // If same group, ignore
+    if (dragData.sourceGroupId == targetGroupId) {
+      return;
+    }
+
+    // Center zone: move tab to this group
+    if (dropZone == DropZoneType.moveToGroup) {
+      onTabMoveToGroup?.call(
+        dragData.tab.id,
+        targetGroupId,
+        tabs.length, // Insert at end
+      );
+    }
+    // Edge zones: create split
+    else {
+      onSplitRequest?.call(dragData.tab.id, dropZone);
     }
   }
 
@@ -126,8 +161,18 @@ class TabWorkspace extends StatelessWidget {
             theme: workspaceTheme,
           ),
 
-          // Content area
-          Expanded(child: _buildContentArea(workspaceTheme, colorScheme)),
+          // Content area with drop target
+          Expanded(
+            child: DropTargetContent(
+              groupId: effectiveGroupId,
+              onDrop: (dragData, dropZone) => _handleDrop(
+                dragData,
+                dropZone,
+                effectiveGroupId,
+              ),
+              child: _buildContentArea(workspaceTheme, colorScheme),
+            ),
+          ),
         ],
       ),
     );

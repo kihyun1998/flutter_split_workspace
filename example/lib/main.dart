@@ -359,12 +359,13 @@ class _ExampleScreenState extends State<ExampleScreen> {
     });
   }
 
-
   void _onTabReorder(String groupId, int oldIndex, int newIndex) {
     setState(() {
       // Find the group
       final group = WorkspaceHelpers.findGroupById(workspace, groupId);
-      if (group == null || group.tabs == null || oldIndex >= group.tabs!.length) {
+      if (group == null ||
+          group.tabs == null ||
+          oldIndex >= group.tabs!.length) {
         return;
       }
 
@@ -389,6 +390,27 @@ class _ExampleScreenState extends State<ExampleScreen> {
 
       // Clean up empty group if needed
       if (result.emptyGroupId != null) {
+        workspace = SplitService.removeEmptyGroup(
+          workspace,
+          result.emptyGroupId!,
+        );
+      }
+    });
+  }
+
+  void _onSplitRequest(String sourceTabId, String targetGroupId, DropZoneType dropZone) {
+    setState(() {
+      final result = SplitService.createSplitWithResult(
+        workspace,
+        sourceTabId: sourceTabId,
+        dropZone: dropZone,
+        targetGroupId: targetGroupId,
+      );
+
+      workspace = result.newState;
+
+      // Clean up empty group if needed
+      if (result.needsEmptyGroupCleanup && result.emptyGroupId != null) {
         workspace = SplitService.removeEmptyGroup(
           workspace,
           result.emptyGroupId!,
@@ -535,7 +557,10 @@ class _ExampleScreenState extends State<ExampleScreen> {
                   icon: const Icon(Icons.view_sidebar, size: 16),
                   label: const Text('Split Left'),
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -544,7 +569,10 @@ class _ExampleScreenState extends State<ExampleScreen> {
                   icon: const Icon(Icons.horizontal_split, size: 16),
                   label: const Text('Split Top'),
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -553,7 +581,10 @@ class _ExampleScreenState extends State<ExampleScreen> {
                   icon: const Icon(Icons.refresh, size: 16),
                   label: const Text('Reset'),
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
                 ),
                 const Spacer(),
@@ -576,6 +607,7 @@ class _ExampleScreenState extends State<ExampleScreen> {
                 onAddTab: (groupId) => _onAddTabToGroup(groupId),
                 onTabReorder: _onTabReorder,
                 onTabMoveToGroup: _onTabMoveToGroup,
+                onSplitRequest: _onSplitRequest,
                 workspaceId: 'main_workspace',
                 theme: _currentTheme,
               ),

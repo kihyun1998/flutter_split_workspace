@@ -40,7 +40,8 @@ class ScrollableTabRowWidget extends StatefulWidget {
   final Function(int oldIndex, int newIndex)? onTabReorder;
 
   /// Callback when a tab is moved to a different group
-  final Function(String tabId, String targetGroupId, int insertIndex)? onTabMoveToGroup;
+  final Function(String tabId, String targetGroupId, int insertIndex)?
+  onTabMoveToGroup;
 
   /// Available width for the tab area (used for scroll optimization)
   final double? availableWidth;
