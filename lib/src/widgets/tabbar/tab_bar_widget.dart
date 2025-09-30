@@ -31,11 +31,17 @@ class TabBarWidget extends StatefulWidget {
   /// Callback when the add tab button is tapped
   final VoidCallback? onAddTab;
 
-  /// Callback when tabs are reordered via drag and drop
+  /// Callback when tabs are reordered via drag and drop (within same group)
   final Function(int oldIndex, int newIndex)? onTabReorder;
+
+  /// Callback when a tab is moved to a different group
+  final Function(String tabId, String targetGroupId, int insertIndex)? onTabMoveToGroup;
 
   /// Workspace identifier for drag and drop operations
   final String workspaceId;
+
+  /// Group identifier for this tab group (used for cross-group tab movement)
+  final String groupId;
 
   /// Theme configuration for styling
   final SplitWorkspaceTheme? theme;
@@ -48,7 +54,9 @@ class TabBarWidget extends StatefulWidget {
     this.onTabClose,
     this.onAddTab,
     this.onTabReorder,
+    this.onTabMoveToGroup,
     required this.workspaceId,
+    required this.groupId,
     this.theme,
   });
 
@@ -118,9 +126,11 @@ class _TabBarWidgetState extends State<TabBarWidget> {
                                 onTabTap: widget.onTabTap,
                                 onTabClose: widget.onTabClose,
                                 workspaceId: widget.workspaceId,
+                                groupId: widget.groupId,
                                 theme: widget.theme,
                                 scrollController: _scrollController,
                                 onTabReorder: widget.onTabReorder,
+                                onTabMoveToGroup: widget.onTabMoveToGroup,
                                 availableWidth: availableWidth,
                               ),
                             )
@@ -130,9 +140,11 @@ class _TabBarWidgetState extends State<TabBarWidget> {
                               onTabTap: widget.onTabTap,
                               onTabClose: widget.onTabClose,
                               workspaceId: widget.workspaceId,
+                              groupId: widget.groupId,
                               theme: widget.theme,
                               scrollController: _scrollController,
                               onTabReorder: widget.onTabReorder,
+                              onTabMoveToGroup: widget.onTabMoveToGroup,
                               availableWidth: availableWidth,
                             ))
                       : // No scrolling needed - show tabs directly
@@ -142,9 +154,11 @@ class _TabBarWidgetState extends State<TabBarWidget> {
                           onTabTap: widget.onTabTap,
                           onTabClose: widget.onTabClose,
                           workspaceId: widget.workspaceId,
+                          groupId: widget.groupId,
                           theme: widget.theme,
                           scrollController: _scrollController,
                           onTabReorder: widget.onTabReorder,
+                          onTabMoveToGroup: widget.onTabMoveToGroup,
                           availableWidth: availableWidth,
                         ),
                 ),

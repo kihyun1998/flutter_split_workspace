@@ -10,6 +10,11 @@ export 'src/models/tab_data.dart';
 export 'src/enums/drop_zone_type.dart';
 export 'src/enums/split_direction.dart';
 
+// Services
+export 'src/services/split_service.dart';
+export 'src/services/tab_service.dart';
+export 'src/services/workspace_helpers.dart';
+
 // Theme
 export 'src/theme/split_workspace_color_scheme_theme.dart';
 export 'src/theme/split_workspace_scrollbar_theme.dart';

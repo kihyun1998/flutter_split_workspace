@@ -29,11 +29,17 @@ class TabWorkspace extends StatelessWidget {
   /// Callback when add tab button is pressed
   final VoidCallback? onAddTab;
 
-  /// Callback when tabs are reordered
+  /// Callback when tabs are reordered (within same group)
   final Function(int oldIndex, int newIndex)? onTabReorder;
+
+  /// Callback when a tab is moved to a different group
+  final Function(String tabId, String targetGroupId, int insertIndex)? onTabMoveToGroup;
 
   /// Unique workspace identifier
   final String? workspaceId;
+
+  /// Group identifier for this tab group
+  final String? groupId;
 
   /// Theme configuration for styling the entire workspace.
   ///
@@ -65,7 +71,9 @@ class TabWorkspace extends StatelessWidget {
     this.onTabClose,
     this.onAddTab,
     this.onTabReorder,
+    this.onTabMoveToGroup,
     this.workspaceId,
+    this.groupId,
     this.theme,
   });
 
@@ -87,6 +95,7 @@ class TabWorkspace extends StatelessWidget {
     final workspaceTheme = theme ?? SplitWorkspaceTheme.defaultTheme;
     final colorScheme = workspaceTheme.colorScheme;
     final effectiveWorkspaceId = workspaceId ?? 'default';
+    final effectiveGroupId = groupId ?? effectiveWorkspaceId;
 
     return Container(
       decoration: BoxDecoration(
@@ -109,7 +118,9 @@ class TabWorkspace extends StatelessWidget {
             onTabClose: onTabClose,
             onAddTab: onAddTab,
             onTabReorder: onTabReorder,
+            onTabMoveToGroup: onTabMoveToGroup,
             workspaceId: effectiveWorkspaceId,
+            groupId: effectiveGroupId,
             theme: workspaceTheme,
           ),
 

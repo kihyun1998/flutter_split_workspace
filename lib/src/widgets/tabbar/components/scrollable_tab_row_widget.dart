@@ -27,14 +27,20 @@ class ScrollableTabRowWidget extends StatefulWidget {
   /// Workspace identifier for drag and drop operations
   final String workspaceId;
 
+  /// Group identifier for this tab group (used for cross-group tab movement)
+  final String groupId;
+
   /// Theme configuration for styling
   final SplitWorkspaceTheme? theme;
 
   /// Controller for horizontal scrolling
   final ScrollController scrollController;
 
-  /// Callback when tabs are reordered via drag and drop
+  /// Callback when tabs are reordered via drag and drop (within same group)
   final Function(int oldIndex, int newIndex)? onTabReorder;
+
+  /// Callback when a tab is moved to a different group
+  final Function(String tabId, String targetGroupId, int insertIndex)? onTabMoveToGroup;
 
   /// Available width for the tab area (used for scroll optimization)
   final double? availableWidth;
@@ -46,9 +52,11 @@ class ScrollableTabRowWidget extends StatefulWidget {
     this.onTabTap,
     this.onTabClose,
     required this.workspaceId,
+    required this.groupId,
     this.theme,
     required this.scrollController,
     this.onTabReorder,
+    this.onTabMoveToGroup,
     this.availableWidth,
   });
 
@@ -89,8 +97,10 @@ class _ScrollableTabRowWidgetState extends State<ScrollableTabRowWidget> {
           onClose: tab.closeable ? () => widget.onTabClose?.call(tab.id) : null,
           tabIndex: index,
           workspaceId: widget.workspaceId,
+          groupId: widget.groupId,
           theme: widget.theme,
           onTabReorder: widget.onTabReorder,
+          onTabMoveToGroup: widget.onTabMoveToGroup,
           onLeftHover: () => _activateDropZone(index),
           onRightHover: () => _activateDropZone(index + 1),
           onHoverEnd: () => _deactivateDropZone(),

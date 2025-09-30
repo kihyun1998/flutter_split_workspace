@@ -31,11 +31,17 @@ class TabItemWidget extends StatelessWidget {
   /// Workspace ID for drag and drop operations
   final String workspaceId;
 
+  /// Group ID for this tab group (used for cross-group tab movement)
+  final String groupId;
+
   /// Theme configuration for styling
   final SplitWorkspaceTheme? theme;
 
-  /// Callback when a tab is dropped before this tab
+  /// Callback when tabs are reordered within the same group
   final Function(int sourceIndex, int targetIndex)? onTabReorder;
+
+  /// Callback when a tab is moved to a different group
+  final Function(String tabId, String targetGroupId, int insertIndex)? onTabMoveToGroup;
 
   /// Callback when left side of tab is hovered during drag
   final VoidCallback? onLeftHover;
@@ -54,8 +60,10 @@ class TabItemWidget extends StatelessWidget {
     this.onClose,
     required this.tabIndex,
     required this.workspaceId,
+    required this.groupId,
     this.theme,
     this.onTabReorder,
+    this.onTabMoveToGroup,
     this.onLeftHover,
     this.onRightHover,
     this.onHoverEnd,
@@ -75,7 +83,7 @@ class TabItemWidget extends StatelessWidget {
               tab: tab,
               originalIndex: tabIndex,
               sourceWorkspaceId: workspaceId,
-              sourceGroupId: workspaceId, // TODO: Replace with actual groupId in Phase 3
+              sourceGroupId: groupId,
             ),
             delay: const Duration(milliseconds: 200),
             feedback: _buildDragFeedback(context, workspaceTheme),
@@ -129,28 +137,59 @@ class TabItemWidget extends StatelessWidget {
 
   /// Checks if a dragged tab can be accepted by this tab
   bool _canAcceptDrag(DragData dragData) {
-    // Accept if from same workspace and not the same tab
-    return dragData.sourceWorkspaceId == workspaceId &&
-        dragData.originalIndex != tabIndex;
+    // Accept if from same workspace
+    if (dragData.sourceWorkspaceId != workspaceId) {
+      return false;
+    }
+
+    // If from same group, don't accept the same tab
+    if (dragData.sourceGroupId == groupId) {
+      return dragData.originalIndex != tabIndex;
+    }
+
+    // Different group: always accept
+    return true;
   }
 
   /// Handles drop on the left side (insert before this tab)
   void _handleLeftDrop(DragData dragData) {
-    if (_canAcceptDrag(dragData)) {
-      final targetIndex = tabIndex;
+    if (!_canAcceptDrag(dragData)) {
+      onHoverEnd?.call();
+      return;
+    }
+
+    final targetIndex = tabIndex;
+
+    // Same group: reorder
+    if (dragData.sourceGroupId == groupId) {
       onTabReorder?.call(dragData.originalIndex, targetIndex);
     }
-    // 드롭 후 indicator 비활성화
+    // Different group: move to this group
+    else {
+      onTabMoveToGroup?.call(dragData.tab.id, groupId, targetIndex);
+    }
+
     onHoverEnd?.call();
   }
 
   /// Handles drop on the right side (insert after this tab)
   void _handleRightDrop(DragData dragData) {
-    if (_canAcceptDrag(dragData)) {
-      final targetIndex = tabIndex + 1;
+    if (!_canAcceptDrag(dragData)) {
+      onHoverEnd?.call();
+      return;
+    }
+
+    final targetIndex = tabIndex + 1;
+
+    // Same group: reorder
+    if (dragData.sourceGroupId == groupId) {
       onTabReorder?.call(dragData.originalIndex, targetIndex);
     }
-    // 드롭 후 indicator 비활성화
+    // Different group: move to this group
+    else {
+      onTabMoveToGroup?.call(dragData.tab.id, groupId, targetIndex);
+    }
+
     onHoverEnd?.call();
   }
 

@@ -41,8 +41,11 @@ class ExampleScreen extends StatefulWidget {
 }
 
 class _ExampleScreenState extends State<ExampleScreen> {
-  List<TabData> tabs = [];
-  String? activeTabId;
+  SplitPanel workspace = SplitPanel.singleGroup(
+    id: 'root',
+    tabs: [],
+    activeTabId: null,
+  );
   int _tabCounter = 0;
   ThemeType _currentThemeType = ThemeType.defaultTheme;
 
@@ -104,7 +107,7 @@ class _ExampleScreenState extends State<ExampleScreen> {
   }
 
   void _initializeTabs() {
-    tabs = [
+    final initialTabs = [
       TabData(
         id: 'tab_1',
         title: 'Welcome',
@@ -127,7 +130,12 @@ class _ExampleScreenState extends State<ExampleScreen> {
         content: _buildTabContent('Orange Playground', Colors.orange),
       ),
     ];
-    activeTabId = 'tab_1';
+
+    workspace = SplitPanel.singleGroup(
+      id: 'root',
+      tabs: initialTabs,
+      activeTabId: 'tab_1',
+    );
     _tabCounter = 4;
   }
 
@@ -227,8 +235,8 @@ class _ExampleScreenState extends State<ExampleScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildStatItem('Total Tabs', '${tabs.length}'),
-              _buildStatItem('Active Tab', activeTabId ?? 'None'),
+              _buildStatItem('Total Tabs', '${workspace.tabCount}'),
+              _buildStatItem('Active Tab', workspace.activeTabId ?? 'None'),
               _buildStatItem('Current Theme', _currentThemeType.displayName),
             ],
           ),
@@ -331,92 +339,81 @@ class _ExampleScreenState extends State<ExampleScreen> {
 
   void _onTabTap(String tabId) {
     setState(() {
-      activeTabId = tabId;
+      workspace = TabService.activateTab(workspace, tabId);
     });
   }
 
   void _onTabClose(String tabId) {
     setState(() {
-      tabs.removeWhere((tab) => tab.id == tabId);
-      if (activeTabId == tabId) {
-        if (tabs.isNotEmpty) {
-          activeTabId = tabs.last.id;
-        } else {
-          activeTabId = null;
-        }
+      final result = TabService.removeTabWithEmptyCheck(workspace, tabId);
+      workspace = result.newState;
+
+      // If root became empty, reset to initial state
+      if (result.rootBecameEmpty) {
+        workspace = SplitPanel.singleGroup(
+          id: 'root',
+          tabs: [],
+          activeTabId: null,
+        );
       }
     });
   }
 
   void _onAddTab() {
-    _tabCounter++;
-    final colors = [
-      Colors.red,
-      Colors.teal,
-      Colors.pink,
-      Colors.indigo,
-      Colors.amber,
-      Colors.cyan,
-    ];
-    final color = colors[(_tabCounter - 1) % colors.length];
-
-    final newTab = TabData(
-      id: 'tab_$_tabCounter',
-      title: 'New Tab $_tabCounter',
-      content: _buildTabContent('New Tab $_tabCounter', color),
-    );
-
     setState(() {
-      tabs.add(newTab);
-      activeTabId = newTab.id;
+      _tabCounter++;
+      final colors = [
+        Colors.red,
+        Colors.teal,
+        Colors.pink,
+        Colors.indigo,
+        Colors.amber,
+        Colors.cyan,
+      ];
+      final color = colors[(_tabCounter - 1) % colors.length];
+
+      workspace = TabService.addTabToGroup(
+        workspace,
+        'root', // Add to root group
+        title: 'New Tab $_tabCounter',
+        content: _buildTabContent('New Tab $_tabCounter', color),
+        makeActive: true,
+      );
     });
   }
 
-  /// Fixed tab reorder function with proper index validation
   void _onTabReorder(int oldIndex, int newIndex) {
-    // 🔧 Critical fix: Validate indices before processing
-    print(
-      '🔧 Tab reorder requested: $oldIndex → $newIndex (total: ${tabs.length})',
-    );
-
-    // Ensure oldIndex is valid
-    if (oldIndex < 0 || oldIndex >= tabs.length) {
-      print(
-        '❌ Invalid oldIndex: $oldIndex (valid range: 0-${tabs.length - 1})',
-      );
+    // Get the tab at oldIndex
+    if (workspace.tabs == null || oldIndex >= workspace.tabs!.length) {
       return;
     }
 
-    // 🔧 Key fix: Adjust newIndex for same-list reordering
-    // When moving within the same list, after removing the item,
-    // the insertion index needs adjustment if it's after the removed item
-    int adjustedNewIndex = newIndex;
-
-    // If newIndex is after the oldIndex, we need to subtract 1
-    // because the item will be removed first, shifting indices down
-    if (newIndex > oldIndex) {
-      adjustedNewIndex = newIndex - 1;
-    }
-
-    // Clamp the adjusted index to valid range
-    adjustedNewIndex = adjustedNewIndex.clamp(0, tabs.length - 1);
-
-    print('🔧 Adjusted newIndex: $newIndex → $adjustedNewIndex');
-
-    // Only proceed if there's an actual position change
-    if (oldIndex == adjustedNewIndex) {
-      print('🔧 No position change needed, skipping reorder');
-      return;
-    }
+    final tabId = workspace.tabs![oldIndex].id;
 
     setState(() {
-      // Remove the dragged tab
-      final TabData draggedTab = tabs.removeAt(oldIndex);
-      // Insert at the adjusted position
-      tabs.insert(adjustedNewIndex, draggedTab);
+      workspace = TabService.reorderTab(workspace, tabId, newIndex);
     });
+  }
 
-    print('✅ Tab reordered successfully: ${tabs.map((t) => t.title).toList()}');
+  void _onTabMoveToGroup(String tabId, String targetGroupId, int insertIndex) {
+    setState(() {
+      final result = SplitService.moveTabToGroupWithEmptyCheck(
+        workspace,
+        tabId: tabId,
+        targetGroupId: targetGroupId,
+        insertIndex: insertIndex,
+      );
+
+      workspace = result.newState;
+
+      // Clean up empty group if needed
+      if (result.emptyGroupId != null) {
+        workspace = SplitService.removeEmptyGroup(
+          workspace,
+          result.emptyGroupId!,
+        );
+      }
+    });
   }
 
   @override
@@ -472,13 +469,15 @@ class _ExampleScreenState extends State<ExampleScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: TabWorkspace(
-          tabs: tabs,
-          activeTabId: activeTabId,
+          tabs: workspace.tabs ?? [],
+          activeTabId: workspace.activeTabId,
           onTabTap: _onTabTap,
           onTabClose: _onTabClose,
           onAddTab: _onAddTab,
           onTabReorder: _onTabReorder,
+          onTabMoveToGroup: _onTabMoveToGroup,
           workspaceId: 'main_workspace',
+          groupId: 'root',
           theme: _currentTheme,
         ),
       ),
