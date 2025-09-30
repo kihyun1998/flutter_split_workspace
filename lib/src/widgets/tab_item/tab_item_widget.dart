@@ -2,8 +2,10 @@
 import 'package:flutter/material.dart';
 
 import '../../models/drag_data.dart' show DragData;
+import '../../models/drag_state.dart' show DragState;
 import '../../models/tab_data.dart' show TabData;
 import '../../theme/split_workspace_theme.dart' show SplitWorkspaceTheme;
+import '../drag_config.dart' show DragConfigExtension;
 
 /// Individual tab item widget with drag and drop functionality
 ///
@@ -91,6 +93,25 @@ class TabItemWidget extends StatelessWidget {
             dragAnchorStrategy: (draggable, context, position) {
               // 피드백 위젯의 좌상단이 마우스 포인터 위치가 되도록 설정
               return Offset.zero;
+            },
+            onDragStarted: () {
+              // Update drag state when drag starts
+              context.startDrag(DragState.dragging(
+                dragData: DragData(
+                  tab: tab,
+                  originalIndex: tabIndex,
+                  sourceWorkspaceId: workspaceId,
+                  sourceGroupId: groupId,
+                ),
+              ));
+            },
+            onDragEnd: (details) {
+              // Clear drag state when drag ends
+              context.endDrag();
+            },
+            onDraggableCanceled: (velocity, offset) {
+              // Clear drag state when drag is cancelled
+              context.endDrag();
             },
             child: _buildNormalTab(context, workspaceTheme),
           ),

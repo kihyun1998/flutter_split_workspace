@@ -76,75 +76,88 @@ Render split screen statically (no drag yet)
 
 ---
 
-## Phase 3: Drag & Drop Integration (3-4 days)
+## Phase 3: Drag & Drop Integration (3-4 days) ✅
 
 ### Objective
 Create splits by dragging tabs
 
 ### Files to Create
-- [ ] `lib/src/models/drag_state.dart`
-  - [ ] Drag state model (isDragging, draggedTab, etc.)
+- [x] `lib/src/models/drag_state.dart`
+  - [x] Drag state model (isDragging, draggedTab, etc.)
 
-- [ ] `lib/src/widgets/drag_config.dart`
-  - [ ] InheritedWidget for drag state
-  - [ ] Provides drag state to descendants
+- [x] `lib/src/widgets/drag_config.dart`
+  - [x] InheritedWidget for drag state
+  - [x] Provides drag state to descendants
 
-- [ ] `lib/src/widgets/draggable_tab_item.dart`
-  - [ ] Draggable tab implementation
-  - [ ] `LongPressDraggable`
-  - [ ] Updates drag state on events
+- [x] `lib/src/widgets/draggable_tab_item.dart`
+  - [x] Already exists in `tab_item_widget.dart`
+  - [x] `LongPressDraggable`
+  - [x] Updates drag state on events
 
-- [ ] `lib/src/widgets/drop_target_content.dart`
-  - [ ] Droppable content area
-  - [ ] `DragTarget<TabData>`
-  - [ ] Detects drop zones (5 areas)
-  - [ ] Triggers split or move action
+- [x] `lib/src/widgets/drop_target_content.dart`
+  - [x] Droppable content area
+  - [x] `DragTarget<TabData>`
+  - [x] Detects drop zones (5 areas)
+  - [x] Triggers split or move action
 
-- [ ] `lib/src/utils/drop_zone_calculator.dart`
-  - [ ] Calculate 5 drop zones (left/right/top/bottom/center)
-  - [ ] Detect zone from mouse position
+- [x] `lib/src/utils/drop_zone_calculator.dart`
+  - [x] Calculate 5 drop zones (left/right/top/bottom/center)
+  - [x] Detect zone from mouse position
 
 ### Updates
-- [ ] Update `split_workspace.dart`
-  - [ ] Add `onAction` callback
-  - [ ] Wrap with `DragConfig`
-  - [ ] Handle drag state
+- [x] Update `split_workspace.dart`
+  - [x] Add `onSplitRequest` callback
+  - [x] Wrap with `DragConfigProvider`
+  - [x] Handle drag state
+
+- [x] Update `tab_workspace.dart`
+  - [x] Wrap content with `DropTargetContent`
+  - [x] Handle drop events
+
+- [x] Update `example/main.dart`
+  - [x] Add `_onSplitRequest` handler
 
 ### Completion Criteria
-- [ ] Tab drag starts correctly
-- [ ] 5 zones detected in content area
-- [ ] Drop creates split or moves tab
+- [x] Tab drag starts correctly
+- [x] 5 zones detected in content area
+- [x] Drop creates split or moves tab
 
 ---
 
-## Phase 4: Preview & Nested Split (2-3 days)
+## Phase 4: Preview & Nested Split (2-3 days) ✅
 
 ### Objective
 Show preview during drag, support nested splits
 
 ### Files to Create
-- [ ] `lib/src/widgets/split_preview_overlay.dart`
-  - [ ] Visual preview during drag
-  - [ ] Shows new/existing group areas
-  - [ ] Shows split line
-  - [ ] Different style for move vs split
+- [x] `lib/src/widgets/split_preview_overlay.dart`
+  - [x] Visual preview during drag
+  - [x] Shows new/existing group areas
+  - [x] Shows split line
+  - [x] Different style for move vs split
+
+### Updates
+- [x] Update `tab_workspace.dart`
+  - [x] Add Stack with LayoutBuilder
+  - [x] Show preview overlay during drag
+  - [x] Use DragConfig context extension
 
 ### Features
-- [ ] Nested split support
-  - [ ] Use `targetGroupId` parameter
-  - [ ] Can split already-split groups
-  - [ ] Max depth enforcement (4 levels)
+- [x] Nested split support
+  - [x] Use `targetGroupId` parameter (already in Phase 3)
+  - [x] Can split already-split groups (SplitService supports this)
+  - [x] Max depth enforcement (4 levels - in SplitService)
 
-- [ ] Preview styling
-  - [ ] New group area highlighted
-  - [ ] Existing group dimmed
-  - [ ] Split line emphasized
-  - [ ] Different colors for move vs split
+- [x] Preview styling
+  - [x] New group area highlighted
+  - [x] Existing group dimmed
+  - [x] Split line emphasized
+  - [x] Different colors for move vs split
 
 ### Completion Criteria
-- [ ] Real-time preview during drag
-- [ ] Nested splits work (can create 2x2 grid)
-- [ ] Depth limit prevents excessive nesting
+- [x] Real-time preview during drag
+- [x] Nested splits work (can create 2x2 grid)
+- [x] Depth limit prevents excessive nesting
 
 ---
 

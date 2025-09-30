@@ -6,7 +6,10 @@ import '../../enums/drop_zone_type.dart';
 import '../../models/drag_data.dart';
 import '../../models/tab_data.dart';
 import '../../theme/split_workspace_theme.dart';
+import '../../utils/drop_zone_calculator.dart';
+import '../drag_config.dart';
 import '../drop_target_content.dart';
+import '../split_preview_overlay.dart';
 import '../tabbar/tab_bar_widget.dart';
 
 /// Main workspace widget that combines tab bar and content area
@@ -36,7 +39,8 @@ class TabWorkspace extends StatelessWidget {
   final Function(String groupId, int oldIndex, int newIndex)? onTabReorder;
 
   /// Callback when a tab is moved to a different group
-  final Function(String tabId, String targetGroupId, int insertIndex)? onTabMoveToGroup;
+  final Function(String tabId, String targetGroupId, int insertIndex)?
+  onTabMoveToGroup;
 
   /// Callback when a tab is dropped to create a split
   final Function(String sourceTabId, DropZoneType dropZone)? onSplitRequest;
@@ -153,7 +157,8 @@ class TabWorkspace extends StatelessWidget {
             onTabClose: onTabClose,
             onAddTab: onAddTab,
             onTabReorder: onTabReorder != null
-                ? (oldIndex, newIndex) => onTabReorder!(effectiveGroupId, oldIndex, newIndex)
+                ? (oldIndex, newIndex) =>
+                      onTabReorder!(effectiveGroupId, oldIndex, newIndex)
                 : null,
             onTabMoveToGroup: onTabMoveToGroup,
             workspaceId: effectiveWorkspaceId,
@@ -161,16 +166,54 @@ class TabWorkspace extends StatelessWidget {
             theme: workspaceTheme,
           ),
 
-          // Content area with drop target
+          // Content area with drop target and preview overlay
           Expanded(
-            child: DropTargetContent(
-              groupId: effectiveGroupId,
-              onDrop: (dragData, dropZone) => _handleDrop(
-                dragData,
-                dropZone,
-                effectiveGroupId,
-              ),
-              child: _buildContentArea(workspaceTheme, colorScheme),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final dragState = context.dragState;
+                final isDragging = dragState?.isDragging ?? false;
+                final showPreview =
+                    isDragging &&
+                    dragState?.targetGroupId == effectiveGroupId &&
+                    dragState?.currentDropZone != null;
+
+                return Stack(
+                  children: [
+                    // Main content with drop target
+                    DropTargetContent(
+                      groupId: effectiveGroupId,
+                      onDrop: (dragData, dropZone) =>
+                          _handleDrop(dragData, dropZone, effectiveGroupId),
+                      child: _buildContentArea(workspaceTheme, colorScheme),
+                    ),
+
+                    // DEBUG: Show drop zones
+                    _buildDebugDropZones(
+                      Size(constraints.maxWidth, constraints.maxHeight),
+                      colorScheme,
+                    ),
+
+                    // Preview overlay (shown during drag) with smooth transitions
+                    RepaintBoundary(
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 150),
+                        switchInCurve: Curves.easeOut,
+                        switchOutCurve: Curves.easeIn,
+                        child: showPreview
+                            ? SplitPreviewOverlay(
+                                dropZone: dragState?.currentDropZone,
+                                size: Size(
+                                  constraints.maxWidth,
+                                  constraints.maxHeight,
+                                ),
+                                theme: workspaceTheme,
+                              )
+                            : SizedBox.shrink(),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ],
@@ -337,6 +380,81 @@ class TabWorkspace extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+
+  /// DEBUG: Builds visual overlay showing drop zones
+  Widget _buildDebugDropZones(
+    Size size,
+    SplitWorkspaceColorSchemeTheme colorScheme,
+  ) {
+    return IgnorePointer(
+      child: Stack(
+        children: [
+          // Left zone
+          _buildDebugZone(
+            DropZoneCalculator.getDropZoneRect(DropZoneType.splitLeft, size),
+            Colors.red.withOpacity(0.2),
+            'LEFT\n33%',
+          ),
+          // Right zone
+          _buildDebugZone(
+            DropZoneCalculator.getDropZoneRect(DropZoneType.splitRight, size),
+            Colors.blue.withOpacity(0.2),
+            'RIGHT\n33%',
+          ),
+          // Top zone
+          _buildDebugZone(
+            DropZoneCalculator.getDropZoneRect(DropZoneType.splitTop, size),
+            Colors.green.withOpacity(0.2),
+            'TOP\n34%w×33%h',
+          ),
+          // Bottom zone
+          _buildDebugZone(
+            DropZoneCalculator.getDropZoneRect(DropZoneType.splitBottom, size),
+            Colors.orange.withOpacity(0.2),
+            'BOTTOM\n34%w×33%h',
+          ),
+          // Center zone
+          _buildDebugZone(
+            DropZoneCalculator.getDropZoneRect(DropZoneType.moveToGroup, size),
+            Colors.purple.withOpacity(0.2),
+            'CENTER\n34%×34%',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDebugZone(Rect rect, Color color, String label) {
+    return Positioned(
+      left: rect.left,
+      top: rect.top,
+      width: rect.width,
+      height: rect.height,
+      child: Container(
+        decoration: BoxDecoration(
+          color: color,
+          border: Border.all(color: color.withOpacity(0.8), width: 2),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+              shadows: [
+                Shadow(
+                  color: Colors.black,
+                  blurRadius: 4,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

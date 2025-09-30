@@ -82,6 +82,7 @@ class SplitWorkspaceTheme {
   static const SplitWorkspaceTheme dark = SplitWorkspaceTheme(
     colorScheme: SplitWorkspaceColorSchemeTheme(
       primary: Color(0xFFBB86FC),
+      onPrimary: Color(0xFF000000),
       primaryContainer: Color(0xFF3700B3),
       onPrimaryContainer: Colors.white,
       background: Color(0xFF121212),
@@ -106,6 +107,7 @@ class SplitWorkspaceTheme {
   static const SplitWorkspaceTheme light = SplitWorkspaceTheme(
     colorScheme: SplitWorkspaceColorSchemeTheme(
       primary: Color(0xFF6200EE),
+      onPrimary: Colors.white,
       primaryContainer: Color(0xFFBB86FC),
       onPrimaryContainer: Color(0xFF000000),
       background: Color(0xFFFFFBFE),
@@ -126,6 +128,7 @@ class SplitWorkspaceTheme {
   static const SplitWorkspaceTheme minimal = SplitWorkspaceTheme(
     colorScheme: SplitWorkspaceColorSchemeTheme(
       primary: Color(0xFF6366F1),
+      onPrimary: Colors.white,
       primaryContainer: Color(0xFFEEF2FF),
       onPrimaryContainer: Color(0xFF1E1B4B),
       background: Color(0xFFFAFAFA),
@@ -149,6 +152,7 @@ class SplitWorkspaceTheme {
   static const SplitWorkspaceTheme compact = SplitWorkspaceTheme(
     colorScheme: SplitWorkspaceColorSchemeTheme(
       primary: Color(0xFF059669),
+      onPrimary: Colors.white,
       primaryContainer: Color(0xFFD1FAE5),
       onPrimaryContainer: Color(0xFF064E3B),
       background: Color(0xFFF8FAFC),
@@ -167,6 +171,7 @@ class SplitWorkspaceTheme {
   static const SplitWorkspaceTheme highContrast = SplitWorkspaceTheme(
     colorScheme: SplitWorkspaceColorSchemeTheme(
       primary: Color(0xFF000000),
+      onPrimary: Colors.white,
       primaryContainer: Color(0xFF000000),
       onPrimaryContainer: Color(0xFFFFFFFF),
       background: Color(0xFFFFFFFF),

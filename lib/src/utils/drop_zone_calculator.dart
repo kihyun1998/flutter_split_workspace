@@ -9,32 +9,32 @@ import '../enums/drop_zone_type.dart';
 /// to a target area.
 ///
 /// The target area is divided into 5 zones:
-/// - Left edge (20%): [DropZoneType.splitLeft]
-/// - Right edge (20%): [DropZoneType.splitRight]
-/// - Top edge (20%): [DropZoneType.splitTop]
-/// - Bottom edge (20%): [DropZoneType.splitBottom]
-/// - Center (remaining 40x40%): [DropZoneType.moveToGroup]
+/// - Left edge (33%): [DropZoneType.splitLeft]
+/// - Right edge (33%): [DropZoneType.splitRight]
+/// - Top edge (33% of center 34% width): [DropZoneType.splitTop]
+/// - Bottom edge (33% of center 34% width): [DropZoneType.splitBottom]
+/// - Center (34x34%): [DropZoneType.moveToGroup]
 ///
 /// Visual representation:
 /// ```
-/// ┌─────┬──────────────┬─────┐
-/// │     │     Top      │     │
-/// │     │   (20%)      │     │
-/// ├─────┼──────────────┼─────┤
-/// │Left │              │Right│
-/// │(20%)│   Center     │(20%)│
-/// │     │   (move)     │     │
-/// ├─────┼──────────────┼─────┤
-/// │     │   Bottom     │     │
-/// │     │   (20%)      │     │
-/// └─────┴──────────────┴─────┘
+/// ┌─────┬───────┬─────┐
+/// │  L  │   T   │  R  │
+/// │  E  │ (33%) │  I  │
+/// │  F  ├───────┤  G  │
+/// │  T  │       │  H  │
+/// │     │CENTER │  T  │
+/// │(33%)│(MOVE) │(33%)│
+/// │     ├───────┤     │
+/// │     │   B   │     │
+/// │     │ (33%) │     │
+/// └─────┴───────┴─────┘
 /// ```
 class DropZoneCalculator {
   /// Private constructor to prevent instantiation.
   DropZoneCalculator._();
 
-  /// The ratio of the edge zones (default 0.2 = 20%)
-  static const double edgeRatio = 0.2;
+  /// The ratio of the edge zones (default 0.33 = 33%)
+  static const double edgeRatio = 0.33;
 
   /// Calculates which drop zone contains the given local position.
   ///
@@ -60,33 +60,34 @@ class DropZoneCalculator {
     final width = targetSize.width;
     final height = targetSize.height;
 
-    // Calculate edge thresholds
-    final leftThreshold = width * edgeRatio;
-    final rightThreshold = width * (1 - edgeRatio);
-    final topThreshold = height * edgeRatio;
-    final bottomThreshold = height * (1 - edgeRatio);
+    // Calculate edge thresholds (33% for left/right, center is 34%)
+    final leftThreshold = width * 0.33;
+    final rightThreshold = width * 0.67;
+    final topThreshold = height * 0.33;
+    final bottomThreshold = height * 0.67;
 
-    // Check left edge first (highest priority)
+    // Check left edge first (highest priority) - full height
     if (x < leftThreshold) {
       return DropZoneType.splitLeft;
     }
 
-    // Check right edge
+    // Check right edge - full height
     if (x > rightThreshold) {
       return DropZoneType.splitRight;
     }
 
-    // Check top edge
+    // In center width area (33~67%), check top/bottom zones
+    // Top zone: center width, top 33% height
     if (y < topThreshold) {
       return DropZoneType.splitTop;
     }
 
-    // Check bottom edge
+    // Bottom zone: center width, bottom 33% height
     if (y > bottomThreshold) {
       return DropZoneType.splitBottom;
     }
 
-    // Default to center (move to group)
+    // Default to center (move to group) - 34x34% area
     return DropZoneType.moveToGroup;
   }
 
@@ -110,30 +111,36 @@ class DropZoneCalculator {
   static Rect getDropZoneRect(DropZoneType dropZone, Size targetSize) {
     final width = targetSize.width;
     final height = targetSize.height;
-    final leftEdge = width * edgeRatio;
-    final rightEdge = width * (1 - edgeRatio);
-    final topEdge = height * edgeRatio;
-    final bottomEdge = height * (1 - edgeRatio);
 
     switch (dropZone) {
       case DropZoneType.splitLeft:
-        return Rect.fromLTWH(0, 0, leftEdge, height);
+        // Left 33% - full height
+        return Rect.fromLTWH(0, 0, width * 0.33, height);
 
       case DropZoneType.splitRight:
-        return Rect.fromLTWH(rightEdge, 0, width - rightEdge, height);
+        // Right 33% - full height
+        return Rect.fromLTWH(width * 0.67, 0, width * 0.33, height);
 
       case DropZoneType.splitTop:
-        return Rect.fromLTWH(0, 0, width, topEdge);
+        // Center 34% width, top 33% height
+        return Rect.fromLTWH(width * 0.33, 0, width * 0.34, height * 0.33);
 
       case DropZoneType.splitBottom:
-        return Rect.fromLTWH(0, bottomEdge, width, height - bottomEdge);
+        // Center 34% width, bottom 33% height
+        return Rect.fromLTWH(
+          width * 0.33,
+          height * 0.67,
+          width * 0.34,
+          height * 0.33,
+        );
 
       case DropZoneType.moveToGroup:
+        // Center 34% width, center 34% height
         return Rect.fromLTWH(
-          leftEdge,
-          topEdge,
-          rightEdge - leftEdge,
-          bottomEdge - topEdge,
+          width * 0.33,
+          height * 0.33,
+          width * 0.34,
+          height * 0.34,
         );
     }
   }

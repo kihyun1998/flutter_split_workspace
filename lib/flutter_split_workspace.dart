@@ -25,6 +25,7 @@ export 'src/theme/split_workspace_theme.dart';
 // Widgets
 export 'src/widgets/drag_config.dart';
 export 'src/widgets/drop_target_content.dart';
+export 'src/widgets/split_preview_overlay.dart';
 export 'src/widgets/tab_item/tab_item_widget.dart';
 export 'src/widgets/tabbar/tab_bar_widget.dart';
 export 'src/widgets/workspace/tab_workspace.dart';

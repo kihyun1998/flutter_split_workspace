@@ -24,6 +24,12 @@ class SplitWorkspaceColorSchemeTheme {
   /// Should provide good contrast against [primaryContainer].
   final Color primary;
 
+  /// Text/icon color used on [primary] backgrounds.
+  ///
+  /// Must provide sufficient contrast against [primary]
+  /// for accessibility compliance.
+  final Color onPrimary;
+
   /// Container color for primary elements.
   ///
   /// Used for active tab backgrounds, button backgrounds,
@@ -84,6 +90,7 @@ class SplitWorkspaceColorSchemeTheme {
   /// but can be customized for specific brand or design requirements.
   const SplitWorkspaceColorSchemeTheme({
     this.primary = Colors.blueGrey,
+    this.onPrimary = Colors.white,
     this.primaryContainer = Colors.blueGrey,
     this.onPrimaryContainer = Colors.white,
     this.background = Colors.white,
@@ -109,6 +116,7 @@ class SplitWorkspaceColorSchemeTheme {
   /// ```
   SplitWorkspaceColorSchemeTheme copyWith({
     Color? primary,
+    Color? onPrimary,
     Color? primaryContainer,
     Color? onPrimaryContainer,
     Color? background,
@@ -121,6 +129,7 @@ class SplitWorkspaceColorSchemeTheme {
   }) {
     return SplitWorkspaceColorSchemeTheme(
       primary: primary ?? this.primary,
+      onPrimary: onPrimary ?? this.onPrimary,
       primaryContainer: primaryContainer ?? this.primaryContainer,
       onPrimaryContainer: onPrimaryContainer ?? this.onPrimaryContainer,
       background: background ?? this.background,

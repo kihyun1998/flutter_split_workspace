@@ -91,8 +91,8 @@ class _DropTargetContentState extends State<DropTargetContent> {
     final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
 
-    // Calculate drop zone from mouse position
-    final localPosition = details.offset;
+    // Convert global position to local position
+    final localPosition = renderBox.globalToLocal(details.offset);
     final size = renderBox.size;
     final dropZone = DropZoneCalculator.calculateDropZone(
       localPosition,
