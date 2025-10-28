@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/drag_data.dart';
+import '../models/drag_data.dart';
 import '../../../theme/split_workspace_theme.dart';
 
 /// Drop zone indicator widget that shows where a dragged tab can be dropped

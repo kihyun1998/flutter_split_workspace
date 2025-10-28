@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../models/drag_data.dart';
-import '../../../models/tab_data.dart';
 import '../../../theme/split_workspace_theme.dart';
-import '../../tab_item/tab_item_widget.dart';
-import 'drop_zone_indicator.dart';
+import '../../drag_drop/models/drag_data.dart';
+import '../../drag_drop/widgets/drop_zone_indicator.dart';
+import '../../tab/models/tab_data.dart';
+import '../../tab/widgets/tab_item_widget.dart';
 
 /// A scrollable row widget that displays tab items horizontally
 ///

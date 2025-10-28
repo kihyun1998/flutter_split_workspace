@@ -2,9 +2,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_split_workspace/src/theme/split_workspace_color_scheme_theme.dart';
 
-import '../../models/tab_data.dart';
-import '../../theme/split_workspace_theme.dart';
-import '../tabbar/tab_bar_widget.dart';
+import '../../../theme/split_workspace_theme.dart';
+import '../../tab/models/tab_data.dart';
+import '../../tabbar/widgets/tab_bar_widget.dart';
 
 /// Main workspace widget that combines tab bar and content area
 ///

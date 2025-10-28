@@ -1,4 +1,4 @@
-import 'tab_data.dart';
+import '../../tab/models/tab_data.dart';
 
 /// Data model containing information about a tab being dragged.
 ///

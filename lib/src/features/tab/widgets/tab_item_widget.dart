@@ -1,9 +1,9 @@
 // lib/src/widgets/tab_item_widget.dart (수정)
 import 'package:flutter/material.dart';
 
-import '../../models/drag_data.dart' show DragData;
-import '../../models/tab_data.dart' show TabData;
-import '../../theme/split_workspace_theme.dart' show SplitWorkspaceTheme;
+import '../../../theme/split_workspace_theme.dart' show SplitWorkspaceTheme;
+import '../../drag_drop/models/drag_data.dart' show DragData;
+import '../models/tab_data.dart';
 
 /// Individual tab item widget with drag and drop functionality
 ///

@@ -1,11 +1,11 @@
 // lib/src/widgets/tab_bar_widget.dart (스크롤바 색상 수정)
 import 'package:flutter/material.dart';
 
-import '../../models/tab_data.dart';
-import '../../theme/split_workspace_theme.dart';
-import 'components/add_tab_button_widget.dart';
-import 'components/scrollable_tab_row_widget.dart';
-import 'components/themed_scrollbar_widget.dart';
+import '../../../theme/split_workspace_theme.dart';
+import '../../tab/models/tab_data.dart';
+import 'add_tab_button_widget.dart';
+import 'scrollable_tab_row_widget.dart';
+import 'themed_scrollbar_widget.dart';
 
 /// Tab bar widget that displays multiple tabs with drag and drop support
 ///
@@ -94,11 +94,13 @@ class _TabBarWidgetState extends State<TabBarWidget> {
             // Calculate available width for tabs (excluding add button)
             final addButtonWidth = widget.onAddTab != null ? 40.0 : 0.0;
             final availableWidth = constraints.maxWidth - addButtonWidth;
-            
+
             // Calculate total width needed for all tabs
             final tabWidth = tabTheme.width;
-            final totalTabsWidth = widget.tabs.length * tabWidth + 2; // +2 for drop zone indicators
-            
+            final totalTabsWidth =
+                widget.tabs.length * tabWidth +
+                2; // +2 for drop zone indicators
+
             // Determine if scrolling is needed
             final needsScrolling = totalTabsWidth > availableWidth;
 
@@ -108,11 +110,23 @@ class _TabBarWidgetState extends State<TabBarWidget> {
                 Expanded(
                   child: needsScrolling
                       ? (scrollbarTheme.visible
-                          ? ThemedScrollbarWidget(
-                              theme: workspaceTheme,
-                              scrollController: _scrollController,
-                              showScrollbar: _isHovered,
-                              child: ScrollableTabRowWidget(
+                            ? ThemedScrollbarWidget(
+                                theme: workspaceTheme,
+                                scrollController: _scrollController,
+                                showScrollbar: _isHovered,
+                                child: ScrollableTabRowWidget(
+                                  tabs: widget.tabs,
+                                  activeTabId: widget.activeTabId,
+                                  onTabTap: widget.onTabTap,
+                                  onTabClose: widget.onTabClose,
+                                  workspaceId: widget.workspaceId,
+                                  theme: widget.theme,
+                                  scrollController: _scrollController,
+                                  onTabReorder: widget.onTabReorder,
+                                  availableWidth: availableWidth,
+                                ),
+                              )
+                            : ScrollableTabRowWidget(
                                 tabs: widget.tabs,
                                 activeTabId: widget.activeTabId,
                                 onTabTap: widget.onTabTap,
@@ -122,21 +136,9 @@ class _TabBarWidgetState extends State<TabBarWidget> {
                                 scrollController: _scrollController,
                                 onTabReorder: widget.onTabReorder,
                                 availableWidth: availableWidth,
-                              ),
-                            )
-                          : ScrollableTabRowWidget(
-                              tabs: widget.tabs,
-                              activeTabId: widget.activeTabId,
-                              onTabTap: widget.onTabTap,
-                              onTabClose: widget.onTabClose,
-                              workspaceId: widget.workspaceId,
-                              theme: widget.theme,
-                              scrollController: _scrollController,
-                              onTabReorder: widget.onTabReorder,
-                              availableWidth: availableWidth,
-                            ))
+                              ))
                       : // No scrolling needed - show tabs directly
-                      ScrollableTabRowWidget(
+                        ScrollableTabRowWidget(
                           tabs: widget.tabs,
                           activeTabId: widget.activeTabId,
                           onTabTap: widget.onTabTap,
