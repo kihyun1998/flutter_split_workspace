@@ -12,7 +12,7 @@ import 'themed_scrollbar_widget.dart';
 /// This widget handles:
 /// - Horizontal scrolling of tabs
 /// - Drag and drop reordering
-/// - Drop zone indicators
+/// - Drop zone indicators (externally controlled)
 /// - Add new tab functionality
 /// - Theme integration with colorScheme
 class TabBarWidget extends StatefulWidget {
@@ -40,6 +40,15 @@ class TabBarWidget extends StatefulWidget {
   /// Theme configuration for styling
   final SplitWorkspaceTheme? theme;
 
+  /// Active drop zone index (externally controlled, -1 means none active)
+  final int? activeDropZoneIndex;
+
+  /// Callback when a drop zone should be activated
+  final Function(int index)? onDropZoneActivate;
+
+  /// Callback when drop zones should be deactivated
+  final VoidCallback? onDropZoneDeactivate;
+
   const TabBarWidget({
     super.key,
     required this.tabs,
@@ -50,6 +59,9 @@ class TabBarWidget extends StatefulWidget {
     this.onTabReorder,
     required this.workspaceId,
     this.theme,
+    this.activeDropZoneIndex,
+    this.onDropZoneActivate,
+    this.onDropZoneDeactivate,
   });
 
   @override
@@ -124,6 +136,9 @@ class _TabBarWidgetState extends State<TabBarWidget> {
                                   scrollController: _scrollController,
                                   onTabReorder: widget.onTabReorder,
                                   availableWidth: availableWidth,
+                                  activeDropZoneIndex: widget.activeDropZoneIndex,
+                                  onDropZoneActivate: widget.onDropZoneActivate,
+                                  onDropZoneDeactivate: widget.onDropZoneDeactivate,
                                 ),
                               )
                             : ScrollableTabRowWidget(
@@ -136,6 +151,9 @@ class _TabBarWidgetState extends State<TabBarWidget> {
                                 scrollController: _scrollController,
                                 onTabReorder: widget.onTabReorder,
                                 availableWidth: availableWidth,
+                                activeDropZoneIndex: widget.activeDropZoneIndex,
+                                onDropZoneActivate: widget.onDropZoneActivate,
+                                onDropZoneDeactivate: widget.onDropZoneDeactivate,
                               ))
                       : // No scrolling needed - show tabs directly
                         ScrollableTabRowWidget(
@@ -148,6 +166,9 @@ class _TabBarWidgetState extends State<TabBarWidget> {
                           scrollController: _scrollController,
                           onTabReorder: widget.onTabReorder,
                           availableWidth: availableWidth,
+                          activeDropZoneIndex: widget.activeDropZoneIndex,
+                          onDropZoneActivate: widget.onDropZoneActivate,
+                          onDropZoneDeactivate: widget.onDropZoneDeactivate,
                         ),
                 ),
 

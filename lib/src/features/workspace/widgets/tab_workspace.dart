@@ -41,6 +41,15 @@ class TabWorkspace extends StatelessWidget {
   /// controls colors, dimensions, and behavior for all workspace components.
   final SplitWorkspaceTheme? theme;
 
+  /// Active drop zone index (externally controlled, -1 means none active)
+  final int? activeDropZoneIndex;
+
+  /// Callback when a drop zone should be activated
+  final Function(int index)? onDropZoneActivate;
+
+  /// Callback when drop zones should be deactivated
+  final VoidCallback? onDropZoneDeactivate;
+
   /// Creates a tab workspace with the specified configuration.
   ///
   /// The [tabs] parameter is required and contains the list of tabs to display.
@@ -67,6 +76,9 @@ class TabWorkspace extends StatelessWidget {
     this.onTabReorder,
     this.workspaceId,
     this.theme,
+    this.activeDropZoneIndex,
+    this.onDropZoneActivate,
+    this.onDropZoneDeactivate,
   });
 
   /// Returns the currently active tab data, if any.
@@ -111,6 +123,9 @@ class TabWorkspace extends StatelessWidget {
             onTabReorder: onTabReorder,
             workspaceId: effectiveWorkspaceId,
             theme: workspaceTheme,
+            activeDropZoneIndex: activeDropZoneIndex,
+            onDropZoneActivate: onDropZoneActivate,
+            onDropZoneDeactivate: onDropZoneDeactivate,
           ),
 
           // Content area

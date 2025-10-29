@@ -46,6 +46,9 @@ class _ExampleScreenState extends State<ExampleScreen> {
   int _tabCounter = 0;
   ThemeType _currentThemeType = ThemeType.defaultTheme;
 
+  /// Active drop zone index for drag and drop visual feedback (-1 means none active)
+  int _activeDropZoneIndex = -1;
+
   /// Custom theme definition
   final SplitWorkspaceTheme _customTheme = const SplitWorkspaceTheme(
     colorScheme: SplitWorkspaceColorSchemeTheme(
@@ -419,6 +422,24 @@ class _ExampleScreenState extends State<ExampleScreen> {
     print('✅ Tab reordered successfully: ${tabs.map((t) => t.title).toList()}');
   }
 
+  /// Activates a drop zone at the given index
+  void _onDropZoneActivate(int index) {
+    if (_activeDropZoneIndex != index) {
+      setState(() {
+        _activeDropZoneIndex = index;
+      });
+    }
+  }
+
+  /// Deactivates all drop zones
+  void _onDropZoneDeactivate() {
+    if (_activeDropZoneIndex != -1) {
+      setState(() {
+        _activeDropZoneIndex = -1;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -480,6 +501,9 @@ class _ExampleScreenState extends State<ExampleScreen> {
           onTabReorder: _onTabReorder,
           workspaceId: 'main_workspace',
           theme: _currentTheme,
+          activeDropZoneIndex: _activeDropZoneIndex,
+          onDropZoneActivate: _onDropZoneActivate,
+          onDropZoneDeactivate: _onDropZoneDeactivate,
         ),
       ),
     );

@@ -11,7 +11,10 @@ import '../../tab/widgets/tab_item_widget.dart';
 /// This widget creates a horizontally scrollable container with all tab items
 /// arranged in a row, handling overflow when there are more tabs than can fit
 /// in the available width.
-class ScrollableTabRowWidget extends StatefulWidget {
+///
+/// **External State Control**: This widget does not manage drop zone state internally.
+/// Users must provide [activeDropZoneIndex] and handle state updates via callbacks.
+class ScrollableTabRowWidget extends StatelessWidget {
   /// List of tabs to display
   final List<TabData> tabs;
 
@@ -39,6 +42,15 @@ class ScrollableTabRowWidget extends StatefulWidget {
   /// Available width for the tab area (used for scroll optimization)
   final double? availableWidth;
 
+  /// Active drop zone index (externally controlled, -1 means none active)
+  final int? activeDropZoneIndex;
+
+  /// Callback when a drop zone should be activated
+  final Function(int index)? onDropZoneActivate;
+
+  /// Callback when drop zones should be deactivated
+  final VoidCallback? onDropZoneDeactivate;
+
   const ScrollableTabRowWidget({
     super.key,
     required this.tabs,
@@ -50,50 +62,45 @@ class ScrollableTabRowWidget extends StatefulWidget {
     required this.scrollController,
     this.onTabReorder,
     this.availableWidth,
+    this.activeDropZoneIndex,
+    this.onDropZoneActivate,
+    this.onDropZoneDeactivate,
   });
 
   @override
-  State<ScrollableTabRowWidget> createState() => _ScrollableTabRowWidgetState();
-}
-
-class _ScrollableTabRowWidgetState extends State<ScrollableTabRowWidget> {
-  /// Active drop zone index (-1 means none active)
-  int _activeDropZone = -1;
-
-  @override
   Widget build(BuildContext context) {
-    final workspaceTheme = widget.theme ?? SplitWorkspaceTheme.defaultTheme;
+    final workspaceTheme = theme ?? SplitWorkspaceTheme.defaultTheme;
 
     // Calculate required width for all tabs
     final tabWidth = workspaceTheme.tab.width;
-    final tabCount = widget.tabs.length;
+    final tabCount = tabs.length;
 
     // Stack width should only be based on actual tab content + last indicator
     final totalWidth = tabCount * tabWidth;
 
     // Use available width if provided and tabs fit within it, otherwise use calculated total width
     final containerWidth =
-        widget.availableWidth != null && totalWidth <= widget.availableWidth!
-        ? widget.availableWidth!
+        availableWidth != null && totalWidth <= availableWidth!
+        ? availableWidth!
         : totalWidth;
 
     final tabsRow = Row(
-      children: widget.tabs.asMap().entries.map((entry) {
+      children: tabs.asMap().entries.map((entry) {
         final index = entry.key;
         final tab = entry.value;
 
         return TabItemWidget(
           tab: tab,
-          isActive: tab.id == widget.activeTabId,
-          onTap: () => widget.onTabTap?.call(tab.id),
-          onClose: tab.closeable ? () => widget.onTabClose?.call(tab.id) : null,
+          isActive: tab.id == activeTabId,
+          onTap: () => onTabTap?.call(tab.id),
+          onClose: tab.closeable ? () => onTabClose?.call(tab.id) : null,
           tabIndex: index,
-          workspaceId: widget.workspaceId,
-          theme: widget.theme,
-          onTabReorder: widget.onTabReorder,
-          onLeftHover: () => _activateDropZone(index),
-          onRightHover: () => _activateDropZone(index + 1),
-          onHoverEnd: () => _deactivateDropZone(),
+          workspaceId: workspaceId,
+          theme: theme,
+          onTabReorder: onTabReorder,
+          onLeftHover: () => onDropZoneActivate?.call(index),
+          onRightHover: () => onDropZoneActivate?.call(index + 1),
+          onHoverEnd: () => onDropZoneDeactivate?.call(),
         );
       }).toList(),
     );
@@ -108,8 +115,8 @@ class _ScrollableTabRowWidgetState extends State<ScrollableTabRowWidget> {
     );
 
     // If tabs fit within available width, no need for horizontal scrolling
-    if (widget.availableWidth != null && totalWidth <= widget.availableWidth!) {
-      final remainingWidth = widget.availableWidth! - totalWidth;
+    if (availableWidth != null && totalWidth <= availableWidth!) {
+      final remainingWidth = availableWidth! - totalWidth;
 
       return SizedBox(
         width: containerWidth,
@@ -126,26 +133,26 @@ class _ScrollableTabRowWidgetState extends State<ScrollableTabRowWidget> {
                   onAcceptWithDetails: (details) {
                     // Move tab to last position
                     if (_canAcceptDrag(details.data)) {
-                      final targetIndex = widget.tabs.length; // Last position
-                      widget.onTabReorder?.call(
+                      final targetIndex = tabs.length; // Last position
+                      onTabReorder?.call(
                         details.data.originalIndex,
                         targetIndex,
                       );
                     }
 
                     // Deactivate drop zone after drop
-                    _deactivateDropZone();
+                    onDropZoneDeactivate?.call();
                   },
                   onWillAcceptWithDetails: (details) {
                     return _canAcceptDrag(details.data);
                   },
                   onMove: (details) {
                     // Activate last drop zone indicator when dragging over
-                    _activateDropZone(widget.tabs.length);
+                    onDropZoneActivate?.call(tabs.length);
                   },
                   onLeave: (details) {
                     // Deactivate drop zone when leaving
-                    _deactivateDropZone();
+                    onDropZoneDeactivate?.call();
                   },
                   builder: (context, candidateData, rejectedData) {
                     return SizedBox(
@@ -162,7 +169,7 @@ class _ScrollableTabRowWidgetState extends State<ScrollableTabRowWidget> {
 
     // Otherwise, use horizontal scrolling
     return SingleChildScrollView(
-      controller: widget.scrollController,
+      controller: scrollController,
       scrollDirection: Axis.horizontal,
       child: SizedBox(width: totalWidth, child: stackContent),
     );
@@ -171,6 +178,7 @@ class _ScrollableTabRowWidgetState extends State<ScrollableTabRowWidget> {
   /// Builds positioned drop zone indicators
   List<Widget> _buildDropZoneIndicators(SplitWorkspaceTheme workspaceTheme) {
     final List<Widget> indicators = [];
+    final currentDropZone = activeDropZoneIndex ?? -1;
 
     // 테마에서 tabWidth 사용
     final tabWidth = workspaceTheme.tab.width;
@@ -182,28 +190,28 @@ class _ScrollableTabRowWidgetState extends State<ScrollableTabRowWidget> {
         top: 0,
         child: DropZoneIndicator(
           index: 0,
-          isActive: _activeDropZone == 0,
+          isActive: currentDropZone == 0,
           theme: workspaceTheme,
-          onTabReorder: widget.onTabReorder,
-          onDropComplete: () => _deactivateDropZone(),
-          workspaceId: widget.workspaceId,
+          onTabReorder: onTabReorder,
+          onDropComplete: () => onDropZoneDeactivate?.call(),
+          workspaceId: workspaceId,
         ),
       ),
     );
 
     // Drop zones after each tab
-    for (int i = 0; i < widget.tabs.length; i++) {
+    for (int i = 0; i < tabs.length; i++) {
       indicators.add(
         Positioned(
           left: (i + 1) * tabWidth - 1,
           top: 0,
           child: DropZoneIndicator(
             index: i + 1,
-            isActive: _activeDropZone == i + 1,
+            isActive: currentDropZone == i + 1,
             theme: workspaceTheme,
-            onTabReorder: widget.onTabReorder,
-            onDropComplete: () => _deactivateDropZone(),
-            workspaceId: widget.workspaceId,
+            onTabReorder: onTabReorder,
+            onDropComplete: () => onDropZoneDeactivate?.call(),
+            workspaceId: workspaceId,
           ),
         ),
       );
@@ -212,27 +220,9 @@ class _ScrollableTabRowWidgetState extends State<ScrollableTabRowWidget> {
     return indicators;
   }
 
-  /// Activates a drop zone at the given index
-  void _activateDropZone(int index) {
-    if (_activeDropZone != index) {
-      setState(() {
-        _activeDropZone = index;
-      });
-    }
-  }
-
-  /// Deactivates all drop zones
-  void _deactivateDropZone() {
-    if (_activeDropZone != -1) {
-      setState(() {
-        _activeDropZone = -1;
-      });
-    }
-  }
-
   /// Checks if a dragged tab can be accepted
   bool _canAcceptDrag(DragData dragData) {
     // Accept if from same workspace and not trying to move to same position
-    return dragData.sourceWorkspaceId == widget.workspaceId;
+    return dragData.sourceWorkspaceId == workspaceId;
   }
 }
